@@ -1,0 +1,74 @@
+{
+  "summary": "Simulation History feature testing complete. All backend APIs and frontend UI working correctly. Tested: GET /api/operator/simulations (paginated list with page, limit, run_type filter), GET /api/operator/simulations/{id} (detail with config_json + summary_json), POST simulation endpoints persist history atomically, immutability verified (PUT/DELETE/PATCH return 405), 404 for non-existent runs, RBAC (guardian gets 403). Frontend: History tab with 'SIMULATION HISTORY (Research Log)' label, table sorted by created_at DESC, click row opens right-side drawer with full JSON pretty view, filter dropdown (All Types/Single Device/Fleet), pagination controls.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Simulation History Drawer", "issues": ["Missing DialogContent aria-describedby (accessibility warning in console, non-blocking)"]}
+    ]
+  },
+  "test_results": {
+    "backend": {
+      "GET_simulations_paginated_list": "PASS - Returns {items, total_count, page, limit}",
+      "GET_simulations_filter_single": "PASS - Filter by run_type=single works correctly",
+      "GET_simulations_filter_fleet": "PASS - Filter by run_type=fleet works correctly",
+      "GET_simulations_sorted_desc": "PASS - Results sorted by created_at DESC",
+      "GET_simulations_detail": "PASS - Returns full config_json and summary_json",
+      "GET_simulations_detail_404": "PASS - Returns 404 for non-existent simulation_run_id",
+      "immutability_no_PUT": "PASS - PUT returns 405 Method Not Allowed",
+      "immutability_no_DELETE": "PASS - DELETE returns 405 Method Not Allowed",
+      "immutability_no_PATCH": "PASS - PATCH returns 405 Method Not Allowed",
+      "single_sim_persists_history": "PASS - POST /simulate/heartbeat-seed persists history atomically",
+      "fleet_sim_persists_history": "PASS - POST /simulate/fleet persists history with FULL raw summary (anomaly_distribution, per_device_results, etc.)",
+      "RBAC_guardian_forbidden": "PASS - Guardian gets 403 Forbidden"
+    },
+    "frontend": {
+      "history_tab_visible": "PASS - 'Simulation History' tab button present",
+      "history_label": "PASS - 'SIMULATION HISTORY (Research Log)' label displayed",
+      "history_description": "PASS - 'Immutable audit trail of all simulation experiments' subtitle",
+      "filter_dropdown": "PASS - Filter dropdown with All Types, Single Device, Fleet options",
+      "table_display": "PASS - Table shows RUN ID, TYPE, DEVICES, ANOMALIES, DB WRITES, EXECUTED BY, DATE columns",
+      "table_sorted_desc": "PASS - Rows sorted by date DESC (newest first)",
+      "row_click_opens_drawer": "PASS - Clicking row opens right-side Sheet/drawer",
+      "drawer_run_id": "PASS - Drawer shows simulation_run_id with badge",
+      "drawer_metadata": "PASS - Shows Devices, Anomalies, DB Writes, Scheduler, Executed By, Date",
+      "drawer_config_json": "PASS - CONFIGURATION section with JSON pretty view",
+      "drawer_summary_json": "PASS - FULL SUMMARY section with JSON pretty view",
+      "pagination_controls": "PASS - Previous/Next page buttons and 'Page X of Y' text",
+      "total_count_display": "PASS - Shows 'N total runs' count"
+    }
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_simulation_history.py",
+    "/app/test_reports/pytest/pytest_results_simulation_history.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "All Simulation History requirements met",
+    "Fleet persistence is atomic - single transaction for telemetry + evaluation + history record",
+    "Full raw summary stored: anomaly_distribution, per_device_results, metric_patterns, gap_patterns, combined scores, is_simulated flags",
+    "Pagination correctly returns {items, total_count, page, limit}",
+    "Immutability enforced - no PUT/DELETE/PATCH endpoints exist (405 returned)",
+    "History tab UI follows design: 'SIMULATION HISTORY (Research Log)' label, right-side drawer with JSON pretty view",
+    "Minor accessibility warning: Missing aria-describedby in DialogContent (non-blocking)"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_simulation_history.py"
+  ],
+  "success_rate": {
+    "backend": "100% (13/13 pytest tests passed)",
+    "frontend": "100% (13/13 UI tests passed)"
+  },
+  "test_credentials": {
+    "operator": "operator@Nagarik.com / operator123",
+    "guardian": "Nagarik4parents@gmail.com / secret123"
+  },
+  "seed_data_creation": "Created 2 additional simulation runs during pytest tests (1 single, 1 fleet) to verify persistence",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Simulation History feature fully tested and working. Backend: 13 pytest tests in /app/backend/tests/test_simulation_history.py covering list, detail, filter, pagination, immutability, atomic persistence, and RBAC. Frontend: All UI elements working - History tab, filter dropdown, paginated table, drawer with JSON pretty view. 4+ simulation runs exist in DB for testing. No console errors (only accessibility warning for DialogContent aria-describedby)."
+}

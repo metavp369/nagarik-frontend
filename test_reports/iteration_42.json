@@ -1,0 +1,112 @@
+{
+  "summary": "Twin-Aware Risk Engine - COMPLETE. Backend: 22/22 tests PASSED (unit tests for _apply_twin_context, _twin_aware_inactivity, _build_reason, plus API integration tests). Frontend: BehaviorCard correctly displays Twin-Aware badge, personality_tag, and new anomaly types.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_results": {
+    "backend": {
+      "TestApplyTwinContext": {
+        "test_boost_when_expected_active_but_low_interaction": "PASS - Score boosted from 0.3 when twin expects activity but interaction low",
+        "test_boost_when_expected_active_but_low_movement": "PASS - Score boosted from 0.25 when twin expects activity but movement low",
+        "test_suppress_minor_deviation_during_rest": "PASS - Minor score (0.35) suppressed during expected rest",
+        "test_boost_significant_activity_during_sleep": "PASS - High score (0.65) not suppressed during sleep, type=twin_sleep_disruption",
+        "test_returns_expected_active_field": "PASS - Returns expected_active and twin_confidence",
+        "test_no_boost_when_hour_not_in_rhythm": "PASS - No change when hour not in twin rhythm"
+      },
+      "TestTwinAwareInactivity": {
+        "test_low_score_during_expected_rest": "PASS - Very low score (0.05) during sleep, type=expected_inactivity",
+        "test_high_score_when_active_expected_but_inactive": "PASS - Score > 0.5 when active expected but past limit, type=twin_inactivity_exceeded",
+        "test_moderate_score_within_personal_limit": "PASS - Score < 0.5 within personal limit, type=twin_active_expected",
+        "test_very_long_inactivity_during_sleep_raises_concern": "PASS - Very long inactivity raises score even during sleep",
+        "test_generic_fallback_when_hour_not_in_rhythm": "PASS - Uses generic scoring when hour not in rhythm"
+      },
+      "TestBuildReason": {
+        "test_twin_prefix_when_boost_reason_present": "PASS - Reason starts with [TWIN] when twin_context has boost_reason",
+        "test_no_twin_prefix_when_no_boost_reason": "PASS - No [TWIN] prefix when no twin context",
+        "test_reason_for_twin_active_expected": "PASS - Proper reason for twin_active_expected anomaly"
+      },
+      "TestBehaviorPatternAPITwinContext": {
+        "test_behavior_pattern_returns_200": "PASS",
+        "test_response_has_twin_context_field": "PASS - twin_context field present with confidence, expected_active_now, personality_tag",
+        "test_response_has_twin_anomaly_count": "PASS - twin_anomaly_count = 0 (correct - DEV-001 has confidence 0.177 < 0.3 threshold)",
+        "test_current_risk_has_twin_aware_boolean": "PASS - current_risk.twin_aware = true",
+        "test_twin_context_structure_when_present": "PASS - All expected fields: twin_active, confidence, expected_active_now, personal_inactivity_max, personality_tag"
+      },
+      "TestFleetTwinsRegressionCheck": {
+        "test_fleet_twins_returns_200": "PASS - Regression check passed"
+      },
+      "TestGenericFallbackScoring": {
+        "test_generic_scoring_without_twin": "PASS - Generic z-score formula produces clamped score",
+        "test_generic_inactivity_scoring": "PASS - Global 60-min threshold used for generic scoring"
+      }
+    },
+    "frontend": {
+      "BehaviorCard_DEV-001": {
+        "behavior-card": "PASS - Card renders with data-testid='behavior-card'",
+        "behavior-twin-context": "PASS - Twin context section visible",
+        "Twin-Aware_badge": "PASS - 'Twin-Aware' badge displayed (indigo style)",
+        "personality_tag": "PASS - Shows 'Late Starter · Low Activity' from twin_context",
+        "behavior-risk-score": "PASS - Shows 50%",
+        "behavior-risk-panel": "PASS - Shows 'No heartbeat for 60 minutes (threshold: 60min)'",
+        "behavior-anomalies-list": "PASS - Shows 5+ anomaly items",
+        "ANOMALY_TYPE_LABELS": "PASS - Contains twin_active_expected, twin_inactivity_exceeded, twin_sleep_disruption, expected_inactivity"
+      }
+    }
+  },
+  "api_response_samples": {
+    "GET_behavior_pattern_DEV-001": {
+      "current_risk": {
+        "score": 0.5,
+        "status": "mild",
+        "reason": "No heartbeat for 60 minutes (threshold: 60min)",
+        "twin_aware": true
+      },
+      "twin_context": {
+        "twin_active": true,
+        "confidence": 0.177,
+        "expected_active_now": null,
+        "personal_inactivity_max": 30,
+        "personality_tag": "Late Starter · Low Activity"
+      },
+      "twin_anomaly_count": 0,
+      "note": "twin_anomaly_count=0 is correct because DEV-001 twin confidence (0.177) is below 0.3 threshold for twin-aware scoring"
+    }
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_twin_aware_risk_engine.py",
+    "/app/test_reports/pytest/pytest_results_twin_aware.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Backend behavior_ai.py correctly implements twin-aware risk engine with 0.3 confidence threshold for scoring",
+    "Backend _apply_twin_context() boosts score when expected_active=True but metrics are low",
+    "Backend _apply_twin_context() suppresses minor scores during expected rest (expected_active=False)",
+    "Backend _twin_aware_inactivity() returns low score (0.05) during sleep time (expected_inactivity)",
+    "Backend _twin_aware_inactivity() returns high score when active expected but past personal limit",
+    "Backend _build_reason() correctly prefixes with [TWIN] when boost_reason present",
+    "Backend behavior-pattern API returns twin_context and twin_anomaly_count fields",
+    "Frontend BehaviorCard correctly displays Twin-Aware badge when risk.twin_aware is true",
+    "Frontend ANOMALY_TYPE_LABELS includes all new twin anomaly types",
+    "Generic fallback scoring works correctly when no twin or confidence < 0.3"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_twin_aware_risk_engine.py"
+  ],
+  "success_rate": {
+    "backend": "100% (22/22 tests passed)",
+    "frontend": "100% (All UI elements verified)"
+  },
+  "test_credentials": {
+    "operator": "operator@Nagarik.com / operator123"
+  },
+  "seed_data_creation": "None - Used existing DEV-001 twin (confidence 0.177)",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Twin-Aware Risk Engine fully tested. DEV-001 has a twin with confidence 0.177 (below 0.3 threshold for twin scoring, but >= 0.15 for display). The twin_context shows in BehaviorCard with Twin-Aware badge and personality_tag. The behavior-pattern API returns twin_context, twin_anomaly_count, and current_risk.twin_aware. Unit tests for _apply_twin_context, _twin_aware_inactivity, and _build_reason verify the scoring logic. Falls back to generic scoring when no twin or confidence < 0.3."
+}

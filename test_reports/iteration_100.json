@@ -1,0 +1,167 @@
+{
+  "summary": "Guardian AI (Predictive Intelligence) - All 27 backend API tests passed. Frontend UI verified with risk score card, recommended action, layer breakdown, risk factors, AI narrative, sensitivity/thresholds config, and prediction history. All 6 endpoints working correctly. SSE handler registered for guardian_ai_alert.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_results": {
+    "backend_api": {
+      "GET /api/guardian-ai/config": {
+        "auth_required": "PASS - Returns 401 without auth",
+        "returns_config": "PASS - Returns config with all fields (id, user_id, enabled, sensitivity, notification_threshold, call_threshold, sos_threshold, auto_trigger, cooldown_minutes, updated_at)",
+        "default_thresholds": "PASS - Default thresholds: notification=0.6, call=0.75, sos=0.85, cooldown=30min"
+      },
+      "PUT /api/guardian-ai/config": {
+        "auth_required": "PASS - Returns 401 without auth",
+        "updates_sensitivity": "PASS - Updates sensitivity (low/medium/high)",
+        "updates_thresholds": "PASS - Updates notification_threshold, call_threshold, sos_threshold",
+        "updates_auto_trigger": "PASS - Updates auto_trigger boolean",
+        "updates_cooldown": "PASS - Updates cooldown_minutes (5-1440 range)",
+        "updates_enabled": "PASS - Updates enabled toggle",
+        "validates_sensitivity": "PASS - Returns 422 for invalid sensitivity value",
+        "validates_cooldown_min": "PASS - Returns 422 for cooldown < 5"
+      },
+      "POST /api/guardian-ai/predict-risk": {
+        "auth_required": "PASS - Returns 401 without auth",
+        "returns_prediction": "PASS - Returns id, risk_score, risk_level, confidence, recommended_action, action_detail, risk_factors, layer_scores, narrative, status, lat, lng, created_at",
+        "risk_level_values": "PASS - Returns low/moderate/high/critical based on score",
+        "recommended_action_values": "PASS - Returns monitor/fake_notification/fake_call/sos_prearm based on thresholds",
+        "layer_breakdown": "PASS - Returns realtime (50%), location (25%), behavioral (25%) scores",
+        "action_detail": "PASS - Returns action description with urgency (low/medium/high/critical)",
+        "works_without_location": "PASS - Accepts empty body, prediction works without lat/lng",
+        "narrative_generated": "PASS - Returns narrative text summarizing assessment"
+      },
+      "POST /api/guardian-ai/accept-action/{id}": {
+        "auth_required": "PASS - Returns 401 without auth",
+        "updates_status_accepted": "PASS - Updates prediction status to 'accepted', sets user_response='accept', responded_at",
+        "nonexistent_returns_404": "PASS - Returns 404 for non-existent prediction"
+      },
+      "POST /api/guardian-ai/dismiss/{id}": {
+        "auth_required": "PASS - Returns 401 without auth",
+        "updates_status_dismissed": "PASS - Updates prediction status to 'dismissed', sets user_response='dismiss', responded_at",
+        "nonexistent_returns_404": "PASS - Returns 404 for non-existent prediction"
+      },
+      "GET /api/guardian-ai/history": {
+        "auth_required": "PASS - Returns 401 without auth",
+        "returns_list": "PASS - Returns {predictions: [...], count: N}",
+        "entry_structure": "PASS - Each entry has id, risk_score, risk_level, confidence, recommended_action, action_detail, risk_factors, layer_scores, narrative, status, created_at",
+        "respects_limit": "PASS - Respects limit query parameter",
+        "sorted_by_recent": "PASS - Sorted by created_at DESC"
+      }
+    },
+    "frontend_ui": {
+      "nav-guardian-ai": "PASS - Navigation link in sidebar, highlighted with teal when active",
+      "guardian-ai-page": "PASS - Main container loads with data-testid",
+      "prediction-score-card": {
+        "visible": "PASS - Shows risk percentage (19%), circular gauge",
+        "level_badge": "PASS - Shows LOW RISK / MODERATE / HIGH / CRITICAL badge",
+        "confidence": "PASS - Shows confidence percentage (80%)",
+        "coordinates": "PASS - Shows lat/lng when available"
+      },
+      "recommended-action-card": {
+        "visible": "PASS - Shows action card with icon",
+        "action_types": "PASS - Displays Monitor/Escape Notification/Escape Call/Pre-arm SOS with appropriate icons",
+        "urgency_badge": "PASS - Shows urgency badge (low/medium/high/critical)",
+        "action_buttons": "PASS - Shows Accept/Dismiss buttons for pending predictions",
+        "status_badge": "PASS - Shows completed/accepted/dismissed status badge for non-pending"
+      },
+      "layer-breakdown-card": {
+        "visible": "PASS - Layer Breakdown card visible",
+        "realtime_50": "PASS - Real-time (50%) with Zap icon, progress bar",
+        "location_25": "PASS - Location (25%) with Target icon, progress bar",
+        "behavioral_25": "PASS - Behavioral (25%) with Activity icon, progress bar (showing 77% in test)"
+      },
+      "risk-factors-card": {
+        "visible": "PASS - Risk Factors card visible",
+        "factor_entries": "PASS - Shows factors with severity badges (high/medium)",
+        "factor_detail": "PASS - Shows factor type and detail text"
+      },
+      "ai-narrative-card": {
+        "visible": "PASS - AI Narrative card visible",
+        "narrative_text": "PASS - Shows full narrative text in teal background box"
+      },
+      "sensitivity-config-card": {
+        "visible": "PASS - Sensitivity & Thresholds card visible",
+        "sensitivity_select": "PASS - Dropdown with Low/Medium/High options",
+        "notif_threshold_slider": "PASS - Range slider with percentage display (60%)",
+        "call_threshold_slider": "PASS - Range slider with percentage display (75%)",
+        "sos_threshold_slider": "PASS - Range slider with percentage display (85%)",
+        "guardian_enabled_toggle": "PASS - AI Enabled checkbox",
+        "auto_trigger_toggle": "PASS - Auto-trigger Actions checkbox",
+        "cooldown_input": "PASS - Numeric input for cooldown minutes (30)"
+      },
+      "run-prediction-btn": "PASS - Run Prediction button triggers prediction, updates UI",
+      "save-guardian-config-btn": "PASS - Save button triggers PUT /api/guardian-ai/config",
+      "prediction-history-card": {
+        "visible": "PASS - Expandable section with count in header (11)",
+        "history_entries": "PASS - Each entry shows percentage, risk level badge, action icon, status badge, timestamp, confidence, factor count"
+      }
+    },
+    "sse_handlers": {
+      "guardian_ai_alert": "PASS - Handler registered in FamilyDashboard (lines 1551-1566), setGuardianAIAlert called, toast notifications for high/critical (error) and moderate (warning) risk levels"
+    },
+    "existing_features": {
+      "escape_call_nav": "PASS - Navigation link visible and clickable",
+      "escape_notification_nav": "PASS - Navigation link visible and clickable",
+      "sos_nav": "PASS - Navigation link visible and clickable"
+    }
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_guardian_ai.py",
+    "/app/test_reports/pytest/pytest_results_guardian_ai.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Prediction uses 50/25/25 weighting: Real-time signals (50%), Location intelligence (25%), Behavioral patterns (25%)",
+    "Risk classification: critical (>=0.85), high (>=0.6), moderate (>=0.35), low (<0.35)",
+    "Action thresholds with sensitivity multiplier: low=0.8x, medium=1.0x, high=1.2x",
+    "Auto-completes as 'completed' when recommended_action='monitor' (no user response needed)",
+    "Actionable predictions (notification/call/sos) start as 'pending' with Accept/Dismiss buttons",
+    "SSE broadcasts to user and operators when action != 'monitor'",
+    "History sorted by created_at DESC with configurable limit",
+    "Config auto-creates with defaults on first GET request",
+    "Validation: sensitivity must be low/medium/high, cooldown 5-1440 minutes, thresholds 0.0-1.0"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_guardian_ai.py"
+  ],
+  "success_rate": {
+    "backend": "100% (27/27 pytest tests passed)",
+    "frontend": "100% (All UI elements verified via Playwright)"
+  },
+  "test_credentials": {
+    "guardian": "Nagarik4parents@gmail.com / secret123",
+    "user_id": "7437a394-74ef-46a2-864f-6add0e7e8e60"
+  },
+  "seed_data_creation": "No new seed data created. Config auto-created with defaults on first access. Multiple test predictions created during pytest and UI testing with 19% LOW RISK (behavioral anomaly at 77%).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Guardian AI fully tested. Backend: 6 endpoints under /api/guardian-ai prefix - config GET/PUT, predict-risk POST, accept-action POST, dismiss POST, history GET. Prediction engine pulls data from 3 Safety Brain layers (real-time via get_user_risk_status, location via compute_location_risk, behavioral via analyze_behavior) with 50/25/25 weighting. Current test data shows 19% LOW RISK with behavioral anomaly (repeated wandering at 77%). Config auto-creates with defaults (enabled=true, sensitivity=medium, thresholds: notif=0.6, call=0.75, sos=0.85, cooldown=30min). Frontend: GuardianAIPage at /family/guardian-ai shows prediction result (score, level, confidence, coordinates), recommended action with urgency, layer breakdown progress bars, risk factors with severity, AI narrative, sensitivity & thresholds config (dropdown, sliders, toggles, cooldown), expandable history. FamilyDashboard SSE handler for guardian_ai_alert shows toast notifications. All Escape Layer features (Call, Notification, SOS) verified still working.",
+  "mocked_apis": {
+    "has_mocked_apis": false,
+    "mocked_apis_list": []
+  },
+  "verified_features": {
+    "config_get": "Working - Returns/auto-creates config with all fields",
+    "config_put": "Working - Updates all config fields with validation",
+    "predict_risk": "Working - Returns full prediction with layer breakdown, factors, narrative",
+    "accept_action": "Working - Updates status to accepted with responded_at",
+    "dismiss": "Working - Updates status to dismissed with responded_at",
+    "history": "Working - Returns sorted predictions with count",
+    "risk_score_card": "Working - Shows percentage, level badge, confidence, coordinates",
+    "recommended_action_card": "Working - Shows action type, urgency, Accept/Dismiss buttons",
+    "layer_breakdown_card": "Working - Shows Real-time 50%, Location 25%, Behavioral 25%",
+    "risk_factors_card": "Working - Shows factors with severity badges",
+    "ai_narrative_card": "Working - Shows full narrative text",
+    "sensitivity_config": "Working - Dropdown, sliders, toggles all functional",
+    "save_config": "Working - Persists config changes",
+    "run_prediction": "Working - Triggers prediction and updates UI",
+    "prediction_history": "Working - Expandable section with entries",
+    "sse_guardian_ai_alert": "Working - Toast notifications for risk levels"
+  }
+}

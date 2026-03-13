@@ -1,0 +1,66 @@
+{
+  "summary": "Iteration 22: Fleet Simulation complete backend testing. All 24 tests passed for POST /api/operator/simulate/fleet endpoint and simulation isolation features. Verified: (1) Fleet simulation creates telemetry for multiple devices with unique simulation_run_id, (2) Per-device metric_patterns and gap_patterns work correctly, (3) Response includes all required fields: total_devices_affected, total_records_created, total_records_skipped, db_write_volume, scheduler_execution_ms, anomaly_distribution histogram (4 buckets), per_device_results array, anomaly_details, (4) RBAC enforcement (guardian=403, unauthenticated=401), (5) Error handling (404 for nonexistent device, 422 for empty device_patterns, 422 for invalid anomaly start times), (6) Deterministic mode via random_seed, (7) Heartbeat-seed returns simulation_run_id, (8) GET /api/operator/device-anomalies excludes simulated anomalies by default, (9) include_simulated=true includes simulated anomalies, (10) Fleet simulation anomalies marked with is_simulated=true and simulation_run_id.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_results": {
+    "test_fleet_simulation_creates_telemetry_for_multiple_devices": "PASS - Creates telemetry for multiple devices with unique fleet-* simulation_run_id",
+    "test_fleet_simulation_with_per_device_metric_patterns": "PASS - Per-device metric patterns correctly applied",
+    "test_fleet_simulation_with_gap_patterns": "PASS - Gap patterns cause records_skipped_by_gaps > 0",
+    "test_response_includes_total_devices_affected": "PASS - total_devices_affected matches device count",
+    "test_response_includes_db_write_volume": "PASS - db_write_volume equals total_records_created without evaluation",
+    "test_response_includes_scheduler_execution_ms_when_trigger_evaluation_true": "PASS - scheduler_execution_ms present and >= 0",
+    "test_response_includes_anomaly_distribution_histogram": "PASS - 4-bucket histogram (0-25, 25-50, 50-75, 75-100)",
+    "test_response_includes_per_device_results_array": "PASS - per_device_results contains correct structure",
+    "test_response_all_required_fields_present": "PASS - All 14 FleetSimulationResponse fields present",
+    "test_guardian_gets_403": "PASS - Guardian role correctly forbidden",
+    "test_unauthenticated_gets_401": "PASS - Returns 401 without token",
+    "test_404_for_nonexistent_device": "PASS - Returns 404 for unknown device",
+    "test_422_for_empty_device_patterns_list": "PASS - Rejects empty device_patterns",
+    "test_422_for_invalid_duration_minutes": "PASS - Rejects duration_minutes=0",
+    "test_422_for_anomaly_start_at_minute_gte_duration": "PASS - Validates anomaly.start_at_minute < duration",
+    "test_deterministic_mode_via_random_seed": "PASS - Same seed produces same record counts",
+    "test_heartbeat_seed_returns_simulation_run_id": "PASS - seed-* format simulation_run_id returned",
+    "test_device_anomalies_excludes_simulated_by_default": "PASS - Simulated anomalies excluded by default",
+    "test_device_anomalies_includes_simulated_when_requested": "PASS - include_simulated=true shows simulated anomalies",
+    "test_fleet_simulation_anomalies_marked_with_simulation_run_id": "PASS - Anomalies have is_simulated=true and simulation_run_id",
+    "test_anomaly_details_returned_in_response": "PASS - anomaly_details list present with device_id and score",
+    "test_single_device_fleet_simulation": "PASS - Single device fleet sim works",
+    "test_fleet_simulation_with_many_devices": "PASS - 5 devices simulated successfully",
+    "test_fleet_simulation_without_trigger_evaluation": "PASS - scheduler_execution_ms=None, anomalies_triggered=0, baselines_updated=None"
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_fleet_simulation.py",
+    "/app/test_reports/pytest/pytest_results_fleet_simulation.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Fleet simulation correctly implements shared simulation_run_id across all devices in a single run",
+    "is_simulated flag properly isolates synthetic data from production baseline calculations",
+    "Anomaly detection scoping to simulation_run_id correctly avoids production cooldown conflicts",
+    "4-bucket anomaly score histogram provides useful distribution insight",
+    "db_write_volume correctly sums telemetry + anomaly rows for write volume tracking",
+    "scheduler_execution_ms provides accurate timing for evaluation performance monitoring"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_fleet_simulation.py"
+  ],
+  "success_rate": {
+    "backend": "100% (24/24 tests passed)",
+    "frontend": "N/A (backend-only testing requested)"
+  },
+  "test_credentials": {
+    "operator": "operator@Nagarik.com / operator123",
+    "guardian": "Nagarik4parents@gmail.com / secret123"
+  },
+  "seed_data_creation": "Multiple telemetry records and anomalies created via fleet simulation during tests. Devices used: DEV-001, DEV-002, WATCH-001, WBAND-LC-001, Mob-01. All seeded data marked with is_simulated=true.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Fleet Simulation endpoint (POST /api/operator/simulate/fleet) fully tested. All 17 required test cases covered. Simulation isolation (is_simulated, simulation_run_id columns) verified working. Production baseline scheduler correctly excludes simulated telemetry. Device anomalies endpoint correctly filters simulated anomalies by default. Previous iteration 21 covered single-device heartbeat-seed, this iteration covered fleet-wide multi-device simulation."
+}

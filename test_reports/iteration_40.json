@@ -1,0 +1,129 @@
+{
+  "summary": "Phase 3 Behavioral Pattern AI Simulation Lab Extension - COMPLETE. Backend: 18/18 tests PASSED for POST /api/operator/simulate/behavior endpoint. Frontend: All UI elements verified working - Behavior Scenarios tab, 5 scenario type buttons, scenario cards, device selector, simulation execution with timeline chart and KPI cards.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "BehaviorScenarioTab step detail table",
+        "issues": [
+          "Minor React hydration warning: <tr> inside <span> in timeline table - not user-facing but should be fixed"
+        ]
+      }
+    ]
+  },
+  "test_results": {
+    "backend": {
+      "test_requires_authentication": "PASS - 401 without auth",
+      "test_invalid_scenario_type_rejected": "PASS - 422 for invalid scenario_type",
+      "test_ramp_minutes_exceeds_duration_rejected": "PASS - 422 when ramp > duration",
+      "test_unknown_device_returns_404": "PASS - 404 for unknown device",
+      "test_empty_scenarios_rejected": "PASS - 422 for empty scenarios array",
+      "test_single_scenario_success": "PASS - Returns simulation_run_id, anomalies, timeline",
+      "test_response_contains_scenario_result_fields": "PASS - All required fields present",
+      "test_timeline_steps_structure": "PASS - Steps have minute, behavior_score, combined_risk_score, escalation_tier",
+      "test_scenario_type_prolonged_inactivity": "PASS",
+      "test_scenario_type_movement_drop": "PASS",
+      "test_scenario_type_routine_disruption": "PASS",
+      "test_scenario_type_location_wandering": "PASS",
+      "test_scenario_type_route_deviation": "PASS",
+      "test_multiple_scenarios_same_device": "PASS - 2 scenarios, total anomalies summed",
+      "test_combined_score_calculation": "PASS - Combined scores in 0-100 range",
+      "test_behavior_sim_saved_to_history": "PASS - run_type='behavior' in history",
+      "test_get_simulation_detail": "PASS - config_json and summary_json returned",
+      "test_no_escalation_mode": "PASS - trigger_escalation=False works"
+    },
+    "frontend": {
+      "behavior_tab_visible": "PASS - sim-tab-behavior button in tab selector",
+      "5_scenario_buttons": "PASS - prolonged_inactivity, movement_drop, routine_disruption, location_wandering, route_deviation all present",
+      "scenario_card_created": "PASS - scenario-card-0 created with device, duration, intensity, ramp inputs",
+      "device_selector": "PASS - Dropdown shows DEV-001, DEV-002, etc.",
+      "run_simulation": "PASS - Run Simulation button works",
+      "results_container": "PASS - behavior-sim-results appears after simulation",
+      "summary_banner": "PASS - Shows scenario count, anomalies, escalations",
+      "kpi_cards": "PASS - Peak Behavior (82%), Peak Combined (16.4), Final Tier (None), Time to Escalation (—)",
+      "timeline_chart": "PASS - ComposedChart with behavior score curve",
+      "step_detail_toggle": "PASS - Expandable 25-step detail table"
+    }
+  },
+  "verified_test_ids": [
+    "sim-tab-behavior",
+    "behavior-scenario-tab",
+    "add-scenario-prolonged_inactivity",
+    "add-scenario-movement_drop",
+    "add-scenario-routine_disruption",
+    "add-scenario-location_wandering",
+    "add-scenario-route_deviation",
+    "scenario-card-0",
+    "scenario-device-0",
+    "scenario-duration-0",
+    "scenario-intensity-0",
+    "scenario-ramp-0",
+    "run-behavior-sim",
+    "behavior-sim-results",
+    "behavior-sim-summary",
+    "kpi-peak-beh-DEV-001",
+    "kpi-peak-comb-DEV-001",
+    "kpi-tier-DEV-001",
+    "kpi-time-esc-DEV-001",
+    "timeline-chart-DEV-001",
+    "timeline-details-toggle-DEV-001"
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_behavior_simulation.py",
+    "/app/test_reports/pytest/pytest_results_behavior_simulation.xml"
+  ],
+  "action_items": [
+    "Minor: Fix React hydration warning in BehaviorScenarioTab - timeline table has <span> wrapping <tr> elements"
+  ],
+  "critical_code_review_comments": [
+    "Backend POST /api/operator/simulate/behavior correctly validates 5 scenario types and ramp_minutes <= duration_minutes",
+    "BehaviorSimResponse includes simulation_run_id, total_scenarios, total_behavior_anomalies, total_escalations, scenario_results array",
+    "Timeline steps correctly show behavior_score ramping via sigmoid curve from 0.15 baseline to peak intensity",
+    "Combined risk score calculation uses weight_behavior=0.2, weight_battery=0.5, weight_signal=0.3 with correlation_bonus",
+    "With weight_behavior=0.2, behavior anomaly at 0.8 intensity produces ~16 combined score (below 60 threshold), so no escalation as expected",
+    "Frontend BehaviorScenarioTab correctly implements all data-testid attributes",
+    "Timeline chart uses Recharts ComposedChart with Area for behavior/combined scores and ReferenceLine for threshold at 60"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_behavior_simulation.py"
+  ],
+  "success_rate": {
+    "backend": "100% (18/18 tests passed)",
+    "frontend": "100% (10/10 UI checks verified)"
+  },
+  "test_credentials": {
+    "operator": "operator@Nagarik.com / operator123"
+  },
+  "seed_data_creation": "None needed - used existing DEV-001 device",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Phase 3 Behavioral Pattern AI Simulation Lab Extension fully tested. POST /api/operator/simulate/behavior accepts scenarios array with scenario_type (5 types), device_identifier, duration_minutes, intensity (0.1-1.0), ramp_minutes. Returns simulation_run_id, scenario_results with timeline showing behavior_score ramping and combined_risk_score calculation. Frontend BehaviorScenarioTab in SimulationLab page has 5 scenario type buttons, scenario cards with inputs, and displays results with summary banner, KPI cards (peak behavior, peak combined, final tier, time to escalation), timeline chart, and expandable step detail table. Simulation runs are saved to history with run_type='behavior'.",
+  "api_response_sample": {
+    "endpoint": "POST /api/operator/simulate/behavior",
+    "request": {
+      "scenarios": [{"scenario_type": "prolonged_inactivity", "device_identifier": "DEV-001", "duration_minutes": 120, "intensity": 0.8, "ramp_minutes": 20}],
+      "trigger_escalation": true,
+      "step_interval_minutes": 5
+    },
+    "response": {
+      "simulation_run_id": "behavior-87a4fa1ae85a",
+      "total_scenarios": 1,
+      "total_behavior_anomalies": 25,
+      "total_escalations": 0,
+      "is_simulated": true,
+      "scenario_results": [{
+        "device_identifier": "DEV-001",
+        "scenario_type": "prolonged_inactivity",
+        "peak_behavior_score": 0.82,
+        "peak_combined_score": 16.4,
+        "final_escalation_tier": null,
+        "timeline": "[25 steps with behavior_score, combined_risk_score, escalation_tier]"
+      }]
+    }
+  }
+}

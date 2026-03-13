@@ -1,0 +1,86 @@
+{
+  "summary": "Offline Device Detection Feature testing complete. All 18 backend API tests passed (100%). Tested heartbeat telemetry, scheduler offline detection logic, L1-only escalation guard, and auto-recovery when heartbeat returns.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_offline_device_detection.py",
+    "/app/test_reports/pytest/pytest_results_offline_detection.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "POST /api/telemetry with metric_type=heartbeat correctly updates device.last_seen and device.status=online",
+    "POST /api/telemetry with heartbeat for unknown device correctly returns 404",
+    "POST /api/telemetry with heartbeat stores battery_level and signal_strength in metric_value correctly",
+    "Heartbeat does NOT create incidents or escalations (verified - no incident_type='heartbeat' incidents created)",
+    "SOS/fall_detected telemetry still creates incidents (regression passed)",
+    "Scheduler offline detection query correctly identifies stale devices (status=online, last_seen > 10min)",
+    "Scheduler creates device_offline incident with type=device_offline, severity=medium when no open one exists",
+    "Scheduler idempotency: does NOT create duplicate device_offline incidents for same device",
+    "L1-only guard: L2 escalation query excludes device_offline incident_type",
+    "L1-only guard: L3 escalation query excludes device_offline incident_type",
+    "Auto-recovery: heartbeat from offline device resolves open device_offline incident",
+    "Auto-recovery: device status correctly changes from offline to online after heartbeat",
+    "Auto-recovery: device_back_online event is logged in incident_events audit trail",
+    "Config device_offline_threshold_minutes=10 is set in /app/backend/app/core/config.py"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_offline_device_detection.py"
+  ],
+  "success_rate": {
+    "backend": "100% (18/18 tests passed)",
+    "frontend": "N/A - backend only testing requested"
+  },
+  "test_credentials": {
+    "guardian": "Nagarik4parents@gmail.com / secret123",
+    "operator": "operator@Nagarik.com / operator123"
+  },
+  "seed_data_creation": "None - tests use existing devices (DEV-001, DEV-002, TEST-WBAND-827d5e95, TEST-NOTYPE-a0dd1511, E2E-DEV-27596) and create/cleanup test incidents as needed",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Offline device detection feature fully functional. Scheduler runs every 60s and detects devices with last_seen > 10min (configurable via device_offline_threshold_minutes). device_offline incidents have severity=medium and stay at L1 only (excluded from L2/L3 queries via L1_ONLY_INCIDENT_TYPES set). Auto-recovery triggers when heartbeat is received from offline device - resolves open device_offline incident and logs device_back_online event. Heartbeat telemetry can include optional battery_level and signal_strength fields which are stored in metric_value.",
+  "tests_executed": {
+    "backend_api_tests": [
+      "API health check (200)",
+      "POST /api/telemetry heartbeat updates device to online (201)",
+      "POST /api/telemetry heartbeat returns 201",
+      "POST /api/telemetry heartbeat for unknown device (404)",
+      "POST /api/telemetry heartbeat with battery_level and signal_strength (201)",
+      "POST /api/telemetry heartbeat with no optional fields (201)",
+      "Heartbeat does NOT create incidents (verified)",
+      "SOS telemetry creates incident (regression passed)",
+      "fall_detected telemetry creates incident (regression passed)",
+      "Scheduler detects stale devices (last_seen > 10min, status=online)",
+      "Scheduler creates device_offline incident (type=device_offline, severity=medium)",
+      "Scheduler does NOT create duplicate incidents (idempotency)",
+      "L2 query excludes device_offline incidents",
+      "L3 query excludes device_offline incidents",
+      "Heartbeat from offline device resolves device_offline incident",
+      "Device status changes from offline to online after heartbeat",
+      "device_back_online event logged in incident_events audit trail",
+      "Config threshold setting verified (10 min default)"
+    ]
+  },
+  "verified_features": [
+    "POST /api/telemetry with metric_type=heartbeat updates device.last_seen and device.status=online, returns 201",
+    "POST /api/telemetry with metric_type=heartbeat for unknown device returns 404",
+    "POST /api/telemetry with metric_type=heartbeat with battery_level and signal_strength stores them in metric_value",
+    "POST /api/telemetry with metric_type=heartbeat with no optional fields stores empty metric_value",
+    "Heartbeat does NOT create incidents or escalations",
+    "SOS/fall_detected telemetry still creates incidents (regression)",
+    "Scheduler detects stale devices (last_seen > 10min, status=online) and marks them offline",
+    "Scheduler creates device_offline incident (type=device_offline, severity=medium) when no open one exists",
+    "Scheduler does NOT create duplicate device_offline incidents for same device",
+    "device_offline incidents do NOT escalate beyond L1 (L2/L3 queries exclude device_offline type)",
+    "Auto-recovery: heartbeat from an offline device resolves open device_offline incident",
+    "Auto-recovery: device status goes from offline to online after heartbeat",
+    "Auto-recovery: device_back_online event logged in incident audit trail",
+    "Config DEVICE_OFFLINE_THRESHOLD_MINUTES is configurable (default 10 min in config.py)"
+  ]
+}

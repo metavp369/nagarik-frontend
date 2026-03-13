@@ -1,0 +1,121 @@
+{
+  "summary": "Enhanced Simulation Comparison UI testing complete. All 14 features tested and PASS. New extended config fields (recovery_minutes, recovery_buffer, min_clear_cycles, instability_cooldown_minutes), escalation tiers editor, preset buttons, stale indicator, safer Apply flow, and componentization all verified working correctly.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_results": {
+    "frontend": {
+      "extended_config_fields_cfg_a": "PASS - recovery_minutes, recovery_buffer, min_clear_cycles, instability_cooldown_minutes all render with correct default values (15, 5, 2, 30)",
+      "extended_config_fields_cfg_b": "PASS - Same 4 fields render in Config B with matching default values",
+      "escalation_tiers_editor_cfg_a": "PASS - L1 (60-75), L2 (75-90), L3 (90-100) range inputs visible and editable",
+      "escalation_tiers_editor_cfg_b": "PASS - Same tier editor with separate range inputs for Config B",
+      "preset_buttons_only_on_cfg_b": "PASS - Conservative, Balanced, Aggressive buttons appear ONLY on Config B, NOT on Config A",
+      "preset_conservative": "PASS - Applies threshold=70, recovery=20, cooldown=45, tiers 70-85/85-95/95-100",
+      "preset_balanced": "PASS - Applies threshold=60 with default balanced settings",
+      "preset_aggressive": "PASS - Applies threshold=50, cooldown=15, tiers 50-65/65-80/80-100, weights 0.6/0.4",
+      "load_production_button": "PASS - Loads production config into Config A",
+      "run_comparison": "PASS - Runs comparison successfully, shows results panel with delta KPIs",
+      "stale_indicator_appears": "PASS - Amber banner with text 'Configuration changed since last run. Results are outdated.' appears after config change",
+      "stale_rerun_button": "PASS - Re-run button in stale banner triggers new comparison and clears stale state",
+      "swap_ab_button": "PASS - Swaps all config fields correctly (threshold A=60/B=50 -> A=50/B=60) and marks results stale",
+      "clear_button": "PASS - Clears results panel and stale state",
+      "window_selector": "PASS - Dropdown working (15min, 1h, 6h, 24h options)",
+      "weight_validation_error": "PASS - Shows inline error 'Weights sum to 0.8 (must equal 1.0)' when invalid",
+      "weight_validation_toast": "PASS - Toast error shown when attempting to run comparison with invalid weights",
+      "apply_dialog_opens": "PASS - Dialog opens with title 'Apply Config B to Production'",
+      "apply_dialog_content": "PASS - Shows warning about combined_anomaly rule and that changes cannot be undone",
+      "apply_checkbox_disables_confirm": "PASS - Confirm Apply button disabled until checkbox is checked",
+      "apply_checkbox_enables_confirm": "PASS - Confirm Apply button enabled after checkbox checked",
+      "apply_cancel_closes_dialog": "PASS - Cancel button closes dialog correctly",
+      "apply_button_enabled_condition": "PASS - Apply button enabled after successful comparison where B differs from A"
+    }
+  },
+  "verified_test_ids": [
+    "sim-tab-compare",
+    "sim-compare-tab",
+    "cfg-a-card",
+    "cfg-b-card",
+    "cfg-b-presets",
+    "cfg-b-preset-conservative",
+    "cfg-b-preset-balanced",
+    "cfg-b-preset-aggressive",
+    "cfg-a-load-prod",
+    "compare-run-btn",
+    "compare-swap-btn",
+    "compare-clear-btn",
+    "compare-stale-banner",
+    "compare-rerun-btn",
+    "compare-apply-btn",
+    "compare-apply-section",
+    "compare-confirm-overlay",
+    "compare-confirm-dialog",
+    "compare-confirm-checkbox",
+    "compare-confirm-apply",
+    "compare-confirm-cancel",
+    "compare-delta-kpis",
+    "compare-device-changes",
+    "compare-window-select",
+    "cfg-a-tiers-editor",
+    "cfg-b-tiers-editor",
+    "cfg-a-recovery-min",
+    "cfg-a-recovery-buf",
+    "cfg-a-clear-cycles",
+    "cfg-a-cooldown",
+    "cfg-b-recovery-min",
+    "cfg-b-recovery-buf",
+    "cfg-b-clear-cycles",
+    "cfg-b-cooldown",
+    "cfg-a-tier-L1-lo",
+    "cfg-a-tier-L1-hi",
+    "cfg-b-tier-L1-lo",
+    "cfg-b-tier-L1-hi",
+    "cfg-a-weight-error"
+  ],
+  "componentization_verified": [
+    "SimulationCompareTab.jsx - Main compare tab logic, stale indicator, validation, apply flow",
+    "CompareConfigCard.jsx - Config card with extended fields, tiers editor, presets",
+    "CompareResultsPanel.jsx - Results display (delta KPIs, tier chart, device changes)",
+    "CompareApplyDialog.jsx - Confirmation dialog with checkbox guard"
+  ],
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "All 7 requested enhancements implemented correctly",
+    "Extended config fields properly integrated in both Config A and B cards",
+    "Escalation tiers editor allows inline editing of L1/L2/L3 ranges",
+    "Preset buttons correctly populate all fields including new recovery/cooldown fields and tier ranges",
+    "Stale indicator correctly tracks config changes after successful comparison runs",
+    "Apply Config B flow properly disabled when stale, enabled only after valid comparison where B differs",
+    "Confirm dialog has proper safety guard with checkbox requirement",
+    "Componentization properly separates concerns across 4 components",
+    "Weight validation working both inline and via toast on run attempt"
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A (frontend-only test)",
+    "frontend": "100% (22/22 UI tests passed)"
+  },
+  "test_credentials": {
+    "operator": "operator@Nagarik.com / operator123"
+  },
+  "seed_data_creation": "None needed - used production config and live telemetry comparison",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Enhanced Simulation Comparison UI fully tested. All 7 enhancements working: 1) Extended config fields (recovery_minutes, recovery_buffer, min_clear_cycles, instability_cooldown_minutes) in both configs, 2) Escalation tiers editor (L1/L2/L3 range inputs), 3) Preset buttons (Conservative/Balanced/Aggressive) on Config B only, 4) Weight validation (sum=1.0), 5) Stale indicator with Re-run button, 6) Safer Apply flow (disabled when stale/A=B), 7) Componentization (CompareConfigCard, CompareResultsPanel, CompareApplyDialog). Navigate to /operator/simulation and click Compare tab to test.",
+  "screenshots": [
+    ".screenshots/compare_tab_full.jpg - Full Compare tab with both config cards and new fields",
+    ".screenshots/preset_conservative.jpg - Config B with Conservative preset applied",
+    ".screenshots/preset_aggressive.jpg - Config B with Aggressive preset applied",
+    ".screenshots/weight_error.jpg - Weight validation error inline",
+    ".screenshots/validation_toast.jpg - Weight validation toast error",
+    ".screenshots/stale_banner.jpg - Amber stale indicator banner",
+    ".screenshots/apply_dialog_visible.jpg - Apply Config B confirmation dialog",
+    ".screenshots/dialog_checked_js.jpg - Dialog with checkbox checked"
+  ]
+}

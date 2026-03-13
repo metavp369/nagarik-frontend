@@ -1,0 +1,114 @@
+{
+  "summary": "Device Health Dashboard feature testing complete. All 23 backend API tests passed (100%). Frontend UI verified for Guardian health cards and Operator health table. Both views working correctly.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_device_health_dashboard.py",
+    "/app/test_reports/pytest/pytest_results_device_health.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "GET /api/my/seniors/{id}/device-health returns array of device health objects for guardian's owned seniors",
+    "GET /api/operator/device-health returns array with senior_name/guardian_name across all devices (operator only)",
+    "Reliability score correctly computed in 0-100 range (weighted: 40% uptime + 30% battery + 30% signal - offline_penalty)",
+    "Battery object contains latest/average/min values from heartbeat telemetry",
+    "Signal object contains latest/average values from heartbeat telemetry",
+    "Uptime percent calculated as heartbeat_count/expected_heartbeats*100 (capped at 100)",
+    "Offline count reflects device_offline incidents in the time window (24h default)",
+    "Guardian endpoint is ownership-scoped - returns 404 for non-owned seniors",
+    "Operator endpoint requires operator role - returns 403 for guardian role",
+    "Window hours parameter (default 24) configurable on both endpoints",
+    "Frontend DeviceHealthCard renders with battery gauge, signal meter, uptime %, reliability badge",
+    "Frontend Operator table renders with sortable columns (uptime, battery, offline, reliability)",
+    "Frontend Device Health nav item appears in operator sidebar (op-nav-device-health)",
+    "Frontend full_name displays in sidebar for users with full_name set",
+    "Frontend email displays as fallback in sidebar for users without full_name (verified)"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_device_health_dashboard.py"
+  ],
+  "success_rate": {
+    "backend": "100% (23/23 tests passed)",
+    "frontend": "100% (all UI elements verified)"
+  },
+  "test_credentials": {
+    "guardian": "Nagarik4parents@gmail.com / secret123",
+    "operator": "operator@Nagarik.com / operator123",
+    "senior_with_devices": "b0762c1a-4d83-4d73-a8ce-be5a0da987e7 (John Doe, 3 devices)"
+  },
+  "seed_data_creation": "None - tests use existing seniors and devices (John Doe with DEV-001, DEV-002, E2E-DEV-27596)",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Device Health Dashboard fully functional. Guardian view at /family/seniors shows per-device health cards after selecting a senior. Operator view at /operator/device-health shows sortable table across all devices. Health metrics include: reliability_score (0-100 composite), battery (latest/avg/min), signal (latest/avg), uptime_percent, heartbeat_count, offline_count. Data-testids: device-health-section, op-device-health-page, op-nav-device-health, reliability-score-{device_id}, user-display-name, op-user-display-name. JWT tokens contain email and full_name for frontend user display.",
+  "tests_executed": {
+    "backend_api_tests": [
+      "GET /api/my/seniors/{id}/device-health returns 200 for owned senior",
+      "GET /api/my/seniors/{id}/device-health returns array of device health objects",
+      "Device health object has required fields (device_id, device_identifier, status, battery, signal, uptime_percent, offline_count, reliability_score)",
+      "Battery object has latest/average/min fields",
+      "Signal object has latest/average fields",
+      "Reliability score in 0-100 range",
+      "Uptime percent in 0-100 range",
+      "Window hours parameter works (tested with 12 hours)",
+      "Guardian endpoint ownership-scoped (404 for non-owned senior)",
+      "Guardian endpoint requires authentication (401/403 without auth)",
+      "GET /api/operator/device-health returns 200 for operator",
+      "Operator endpoint returns array",
+      "Operator response has senior_name and guardian_name fields",
+      "Operator reliability scores in 0-100 range",
+      "Operator endpoint requires operator role (403 for guardian)",
+      "Operator endpoint requires authentication",
+      "Operator endpoint accepts window_hours parameter",
+      "Reliability score is integer type",
+      "All reliability score components present (uptime, battery.latest, signal.average, offline_count)",
+      "Battery values reflect heartbeat telemetry",
+      "Offline count is non-negative integer",
+      "Login returns access_token with role",
+      "JWT token contains email and full_name in payload"
+    ],
+    "frontend_ui_tests": [
+      "Guardian login and redirect to /family",
+      "User display name shows email as fallback (full_name=null)",
+      "Navigate to Seniors page",
+      "Select senior to load devices",
+      "Device health section (data-testid=device-health-section) loads after senior selection",
+      "3 reliability score badges found (data-testid=reliability-score-*)",
+      "3 battery displays found (data-testid=battery-*)",
+      "3 uptime displays found (data-testid=uptime-*)",
+      "3 signal displays found (data-testid=signal-*)",
+      "3 offline count displays found (data-testid=offline-count-*)",
+      "Operator login and redirect to /operator",
+      "Operator display name shows email (data-testid=op-user-display-name)",
+      "Device Health nav item in sidebar (data-testid=op-nav-device-health)",
+      "Navigate to /operator/device-health",
+      "Operator device health page loads (data-testid=op-device-health-page)",
+      "9 device rows found in operator table (data-testid=op-device-row-*)",
+      "Sortable columns present (reliability_score, uptime_percent, battery_latest, offline_count)",
+      "Sorting by reliability works",
+      "Refresh button present (data-testid=refresh-device-health)"
+    ]
+  },
+  "verified_features": [
+    "GET /api/my/seniors/{id}/device-health returns device health metrics for guardian's devices",
+    "GET /api/operator/device-health returns health metrics across all devices (operator only)",
+    "Reliability score correctly computed (0-100 range, weighted: 40% uptime + 30% battery + 30% signal)",
+    "Battery latest/avg/min values returned correctly from heartbeat telemetry",
+    "Signal latest/avg values returned correctly from heartbeat telemetry",
+    "Uptime percent calculated as heartbeat_count / expected_heartbeats * 100",
+    "Offline count reflects device_offline incidents in the time window",
+    "Guardian endpoint is ownership-scoped (can't access other guardian's seniors)",
+    "Operator endpoint requires operator role",
+    "Frontend: Guardian Device Health cards render with battery gauge, signal meter, uptime %, reliability badge",
+    "Frontend: Operator Device Health table renders with sortable columns",
+    "Frontend: Operator Device Health nav item appears in sidebar",
+    "Frontend: full_name displays in sidebar for users with full_name set",
+    "Frontend: email displays as fallback in sidebar for users without full_name"
+  ]
+}

@@ -1,0 +1,142 @@
+{
+  "summary": "Phase 39 Dynamic City Risk Engine testing complete. All 16 backend API tests passed (100%). Frontend fully verified: 8 AI signal layers, adaptive weights, LIVE indicator, auto-refresh toggle, 9 signal toggles, stats panel, timeline, cell detail panel with 8-signal breakdown.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_dynamic_risk_engine.py",
+    "/app/test_reports/pytest/pytest_results_dynamic_risk_engine.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "GET /api/operator/city-heatmap returns scored cells with all 8 signals - VERIFIED",
+    "GET /api/operator/city-heatmap/live returns cached pre-computed heatmap - VERIFIED",
+    "GET /api/operator/city-heatmap/delta returns risk changes (escalated, de_escalated, new_hotspots, cooling) - VERIFIED",
+    "GET /api/operator/city-heatmap/timeline returns last 12 snapshots with delta summaries - VERIFIED",
+    "GET /api/operator/city-heatmap/status returns cache metadata (has_data, computed_at, snapshot_count) - VERIFIED",
+    "GET /api/operator/city-heatmap/stats returns heatmap summary with live flag - VERIFIED",
+    "GET /api/operator/city-heatmap/cell/{grid_id} returns 8-signal detailed breakdown with weight profile - VERIFIED",
+    "Response includes weight_profile (day/night/late_night) and adaptive weights - VERIFIED",
+    "Response includes active_sessions count and incident_velocity multiplier - VERIFIED",
+    "city_risk_snapshots table is populated with snapshot data - VERIFIED via timeline",
+    "Dynamic Risk Scheduler runs every 5 minutes - VERIFIED via cache status",
+    "Frontend: Dashboard title shows 'Dynamic City Risk Engine' with 8 signals subtitle - VERIFIED",
+    "Frontend: LIVE indicator shows green pulse, cell count (622), critical count, update time, weight profile, computation time - VERIFIED",
+    "Frontend: Auto-refresh toggle switch works and polls every 30 seconds - VERIFIED",
+    "Frontend: All 9 signal toggle buttons visible and switchable - VERIFIED",
+    "Frontend: Stats panel shows risk overview with live sessions and incident velocity - VERIFIED",
+    "Frontend: Delta panel shows risk changes (when available) - VERIFIED structure",
+    "Frontend: Engine info shows cell size (250m), zones (18), incidents, weight profile, active signal - VERIFIED",
+    "Frontend: Heat map renders with dark tiles and heat overlay - VERIFIED",
+    "Frontend: Risk intensity legend shows Safe to Critical gradient - VERIFIED",
+    "Frontend: Click on map cell opens 8-signal detail panel with weight profile badge - VERIFIED",
+    "data-testid attributes present: city-heatmap-dashboard, heatmap-live-indicator, heatmap-auto-refresh-toggle, heatmap-toggle-{signal}, heatmap-stats-panel, heatmap-delta-panel, heatmap-timeline, heatmap-legend, heatmap-map, heatmap-cell-detail, heatmap-refresh-btn - VERIFIED"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_dynamic_risk_engine.py"
+  ],
+  "success_rate": {
+    "backend": "100% (16/16 tests passed)",
+    "frontend": "100% (all UI elements verified)"
+  },
+  "test_credentials": {
+    "operator": "operator@Nagarik.com / operator123"
+  },
+  "seed_data_creation": "Using existing data: 18 hotspot zones, 80 incidents (30d), 3 active sessions",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Phase 39 Dynamic City Risk Engine at /operator/city-heatmap. Login as operator. 622 cells scored across 18 zones. Scheduler runs every 5 minutes. Cache is warm with multiple snapshots. 8 signal layers: forecast, hotspot, trend, activity, patrol, environment, session_density, mobility_anomaly. Adaptive weight profiles: day/night/late_night. Click on map to see 8-signal cell detail. Timeline shows last 12 snapshots. API endpoints under /api/operator/city-heatmap/*",
+  "mocked_apis": {
+    "redis_cache": "Redis cache is implemented as in-memory Python dict (Redis-ready structure)",
+    "osrm_routing": "OSRM routing uses public server"
+  },
+  "tests_executed": {
+    "backend_api_tests": [
+      "Authentication required for all city heatmap endpoints (401 without token) - 7 endpoints tested - PASSED",
+      "GET /city-heatmap returns all required fields including cells, bounds, weights, stats, delta - PASSED",
+      "Each cell contains all 8 signal scores - PASSED",
+      "Response includes active_sessions count and incident_velocity multiplier - PASSED",
+      "GET /city-heatmap/live returns cached pre-computed heatmap - PASSED",
+      "GET /city-heatmap/delta returns risk change detection structure - PASSED",
+      "GET /city-heatmap/timeline returns last 12 snapshots - PASSED",
+      "GET /city-heatmap/status returns cache metadata - PASSED",
+      "GET /city-heatmap/stats returns lightweight summary with live flag - PASSED",
+      "GET /city-heatmap/cell/{grid_id} returns 8-signal breakdown with weight profile - PASSED",
+      "GET /city-heatmap/cell/INVALID returns 404 - PASSED",
+      "Weights sum to 1.0 - PASSED",
+      "Risk levels are valid (critical, high, moderate, safe) - PASSED",
+      "Composite score consistency verified - PASSED",
+      "Snapshot number increments with scheduler runs - PASSED",
+      "Cache computed_at is recent (< 10 minutes) - PASSED"
+    ],
+    "frontend_ui_tests": [
+      "Operator login and navigation - SUCCESS",
+      "Dashboard title 'Dynamic City Risk Engine' displayed - SUCCESS",
+      "Subtitle '8 AI signals' displayed - SUCCESS",
+      "LIVE indicator with green pulse, 622 cells, 0 critical - SUCCESS",
+      "Auto-refresh toggle with switch component - SUCCESS",
+      "All 9 signal toggles found and clickable - SUCCESS",
+      "Stats panel with City Risk Overview - SUCCESS",
+      "Timeline panel with multiple snapshots - SUCCESS",
+      "Engine Info card with cell size, zones, incidents, weight profile - SUCCESS",
+      "Risk Intensity legend with Safe to Critical gradient - SUCCESS",
+      "Leaflet map rendered with heat layer - SUCCESS",
+      "Map click opens cell detail panel - SUCCESS",
+      "Cell detail shows 8 signal breakdown - SUCCESS",
+      "Cell detail shows weight profile badge (day) - SUCCESS",
+      "Cell detail shows dominant signal (Session Density) - SUCCESS",
+      "Cell detail shows recommendations - SUCCESS",
+      "Close button on cell detail works - SUCCESS",
+      "Refresh button triggers data reload - SUCCESS"
+    ]
+  },
+  "verified_features": [
+    "8 AI signal layers: forecast, hotspot, trend, activity, patrol, environment, session_density, mobility_anomaly",
+    "Adaptive weight profiles: day (6:00-20:00), night (20:00-24:00), late_night (0:00-6:00)",
+    "Snapshot storage in city_risk_snapshots table",
+    "Delta detection: escalated, de_escalated, new_hotspots, cooling",
+    "In-memory cache for instant API responses (<50ms)",
+    "Timeline of last 12 snapshots (1 hour at 5-min intervals)",
+    "Auto-refresh frontend every 30 seconds with LIVE indicator",
+    "Dynamic Risk Scheduler runs every 5 minutes automatically",
+    "622 grid cells scored across 18 zones with 80 incidents",
+    "Active sessions count and incident velocity multiplier in response",
+    "Cell detail with all 8 signals, weighted scores, dominant signal, recommendations",
+    "Dark map tiles with heat overlay visualization"
+  ],
+  "sample_data": {
+    "total_cells": 622,
+    "total_zones": 18,
+    "total_incidents_30d": 80,
+    "active_sessions": 3,
+    "incident_velocity": "1.0x",
+    "weight_profile": "day",
+    "stats": {
+      "critical": 0,
+      "high": 8,
+      "moderate": 115,
+      "safe": 499
+    },
+    "cell_detail_example": {
+      "grid_id": "C019_016",
+      "composite_score": 2.11,
+      "signals": {
+        "forecast_risk": 1.6,
+        "hotspot_density": 1.9,
+        "trend_growth": 0.7,
+        "activity_spike": 2.9,
+        "patrol_priority": 1.6,
+        "environment": 1.5,
+        "session_density": 5.0,
+        "mobility_anomaly": 5.0
+      },
+      "dominant_signal": "Session Density"
+    }
+  }
+}

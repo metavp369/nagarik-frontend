@@ -1,0 +1,123 @@
+{
+  "summary": "Escalation Analytics Dashboard (Step 1 - Backend Only) testing complete. All 29 tests passed. GET /api/operator/escalation-analytics endpoint working correctly with single CTE-based query. Response matches contract: volume (total/open incidents, tier counts L1/L2/L3), timings (avg ack/resolve/first escalation), device_instability metrics (auto-recovered vs manual, recovery paths Case A/B, repeat device rate, cooldown blocks), top 10 devices by instability. RBAC enforced (operator access, guardian blocked 403). Window parameter validation working (15-10080 minutes). Empty window returns zeroed structure.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_results": {
+    "backend": {
+      "GET_escalation_analytics_operator_access": "PASS - Operator can access /api/operator/escalation-analytics",
+      "GET_escalation_analytics_guardian_blocked": "PASS - Guardian gets 403 Forbidden",
+      "GET_escalation_analytics_unauthenticated": "PASS - Unauthenticated gets 401/403",
+      "default_window_1440": "PASS - Default window is 1440 minutes (24h)",
+      "window_15_minutes": "PASS - Window 15min works",
+      "window_60_minutes": "PASS - Window 60min works",
+      "window_10080_minutes": "PASS - Window 10080min (7 days) works",
+      "window_below_min_rejected": "PASS - Window < 15 rejected (422)",
+      "window_above_max_rejected": "PASS - Window > 10080 rejected (422)",
+      "response_has_window_minutes": "PASS - window_minutes in response",
+      "response_has_total_incidents": "PASS - total_incidents in response",
+      "response_has_open_incidents": "PASS - open_incidents in response",
+      "response_has_tier_counts": "PASS - tier_counts (l1, l2, l3) in response",
+      "response_has_timings": "PASS - timings (ack, resolve, first_escalation) in response",
+      "response_has_device_instability": "PASS - device_instability metrics in response",
+      "response_has_recovery_paths": "PASS - recovery_paths (case_a, case_b) in response",
+      "response_has_top_devices": "PASS - top_devices_by_instability array in response",
+      "tier_counts_exclusive": "PASS - Tier counts are exclusive (L1=level 1, L2=level 2, L3=level 3+)",
+      "timings_positive_or_null": "PASS - All timing values are positive or null",
+      "ack_time_null_handling": "PASS - avg_time_to_ack_seconds handles null correctly",
+      "repeat_rate_calculation": "PASS - repeat_device_rate_percent calculated correctly",
+      "cooldown_blocks_count_exists": "PASS - cooldown_blocks_count field exists",
+      "recovery_totals_consistent": "PASS - auto + manual <= total instability",
+      "top_devices_has_fields": "PASS - Top devices have device_identifier, senior_name, guardian_name, instability_count, avg_score",
+      "top_devices_ordered_desc": "PASS - Top devices ordered by instability_count DESC",
+      "top_devices_max_10": "PASS - Top devices limited to 10",
+      "empty_window_zeroed": "PASS - Empty window returns valid zeroed structure",
+      "open_lte_total": "PASS - open_incidents <= total_incidents",
+      "instability_subset_of_total": "PASS - device_instability.total <= total_incidents"
+    }
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_escalation_analytics.py",
+    "/app/test_reports/pytest/pytest_results_escalation_analytics.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Single CTE-based PostgreSQL query efficiently computes all KPIs",
+    "Incident-centric windowing filters on incidents.created_at correctly",
+    "Tier counts use incidents.escalation_level (exclusive: L1=1, L2=2, L3>=3)",
+    "Timings exclude negative values via FILTER clause (only count positive durations)",
+    "Recovery paths correctly count Case A (no_anomaly_window) and Case B (clear_cycles_below_hysteresis)",
+    "Repeat device rate formula: devices_with_repeat / devices_with_instability * 100",
+    "Cooldown blocks query filters event_metadata->>'reason' = 'cooldown' (not open_incident_exists)",
+    "Top devices aggregation uses json_agg with proper ORDER BY instability_count DESC, avg_score DESC",
+    "_empty_analytics helper returns correctly zeroed structure for empty windows",
+    "device_instability_escalation_blocked events ARE now logged in baseline_scheduler.py (lines 670-676 for open_incident_exists, lines 690-696 for cooldown)"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_escalation_analytics.py"
+  ],
+  "success_rate": {
+    "backend": "100% (29/29 pytest tests passed)"
+  },
+  "test_credentials": {
+    "operator": "operator@Nagarik.com / operator123",
+    "guardian": "Nagarik4parents@gmail.com / secret123"
+  },
+  "seed_data_creation": "Used existing incident data from previous iterations. Current state in 24h window: 17 total incidents, 12 open, 5 device_instability (3 auto-recovered, 2 manual). Top devices: WBAND-E2E-001 (4), Mob-01 (1). Repeat rate: 50%.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Escalation Analytics (Step 1) fully tested. 29 pytest tests in /app/backend/tests/test_escalation_analytics.py cover: endpoint access, RBAC, window parameter validation, response shape, tier counts, timings, device instability metrics, recovery paths, repeat rate, cooldown blocks, top devices, empty window handling, data integrity. cooldown_blocks_count is 0 in current data because no blocked events have been triggered yet (blocked events require either an open instability incident for the same device OR a recently resolved one within cooldown period). The blocked event logging code IS present in baseline_scheduler.py.",
+  "verification_summary": {
+    "endpoint_tested": "GET /api/operator/escalation-analytics",
+    "query_type": "Single CTE-based PostgreSQL query",
+    "window_parameter_validation": {
+      "min": 15,
+      "max": 10080,
+      "default": 1440
+    },
+    "response_contract_verified": {
+      "window_minutes": "integer",
+      "total_incidents": "integer",
+      "open_incidents": "integer",
+      "tier_counts": {"l1": "integer", "l2": "integer", "l3": "integer"},
+      "timings": {
+        "avg_time_to_ack_seconds": "float or null",
+        "avg_time_to_resolve_seconds": "float or null",
+        "avg_time_to_first_escalation_seconds": "float or null"
+      },
+      "device_instability": {
+        "total": "integer",
+        "auto_recovered": "integer",
+        "manual_resolved": "integer",
+        "recovery_paths": {
+          "case_a_no_anomaly_window": "integer",
+          "case_b_clear_cycles_below_hysteresis": "integer"
+        },
+        "repeat_device_rate_percent": "float",
+        "cooldown_blocks_count": "integer"
+      },
+      "top_devices_by_instability": "array (max 10)"
+    },
+    "current_data_snapshot_24h": {
+      "total_incidents": 17,
+      "open_incidents": 12,
+      "tier_counts": {"l1": 5, "l2": 0, "l3": 12},
+      "device_instability": {
+        "total": 5,
+        "auto_recovered": 3,
+        "manual_resolved": 2,
+        "recovery_paths": {"case_a": 2, "case_b": 1},
+        "repeat_device_rate_percent": 50,
+        "cooldown_blocks_count": 0
+      },
+      "top_devices": ["WBAND-E2E-001 (4)", "Mob-01 (1)"]
+    },
+    "blocked_events_note": "device_instability_escalation_blocked events are implemented but cooldown_blocks_count=0 because no blocking scenarios have occurred in current data. To trigger: create open instability incident for device, then try to escalate again."
+  }
+}

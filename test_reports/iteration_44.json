@@ -1,0 +1,121 @@
+{
+  "summary": "AI Incident Narrative Engine - COMPLETE. Backend: 18/18 tests PASSED. Frontend: All IncidentNarrative component features verified. GPT-5.2 AI generation working (78% confidence on low_battery incident). Template fallback working (40% confidence on TEST incident). All narrative sections render correctly.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_results": {
+    "backend": {
+      "TestNarrativeStatus": {
+        "test_status_returns_200_for_incident_with_narrative": "PASS - Returns has_narrative=true, is_stale=false, latest_version",
+        "test_status_returns_200_for_incident_without_narrative": "PASS - Returns has_narrative=false, is_stale=true",
+        "test_status_returns_404_for_nonexistent_incident": "PASS - 404 Incident not found"
+      },
+      "TestNarrativeGeneration": {
+        "test_generate_narrative_returns_200": "PASS - Creates narrative with id, narrative_version, generated_by, confidence",
+        "test_generate_narrative_structure": "PASS - title, one_line_summary, what_happened, evidence, recommended_actions, confidence",
+        "test_cached_response_when_input_unchanged": "PASS - Returns cached=true when input_hash unchanged",
+        "test_generate_404_for_nonexistent_incident": "PASS - 404 on POST for non-existent incident"
+      },
+      "TestNarrativeHistory": {
+        "test_get_narratives_returns_list": "PASS - Returns array with narrative_version, generated_by, confidence, created_at",
+        "test_narratives_ordered_by_version_desc": "PASS - Newest version first",
+        "test_empty_list_for_incident_without_narratives": "PASS - Returns valid list"
+      },
+      "TestNarrativeVersioning": {
+        "test_version_increments_on_new_generation": "PASS - Version increments when input_hash changes"
+      },
+      "TestNarrativeRBAC": {
+        "test_guardian_cannot_generate_narrative": "PASS - 403 Forbidden for guardian role",
+        "test_guardian_cannot_get_narratives": "PASS - 403 Forbidden",
+        "test_guardian_cannot_check_status": "PASS - 403 Forbidden",
+        "test_unauthenticated_user_gets_401": "PASS - 401 Unauthorized"
+      },
+      "TestNarrativeContent": {
+        "test_narrative_has_valid_confidence": "PASS - Confidence between 0 and 1",
+        "test_narrative_actions_have_priority_and_owner": "PASS - priority, action, owner fields present",
+        "test_narrative_evidence_has_timestamps": "PASS - timestamp, fact fields present"
+      }
+    },
+    "frontend": {
+      "IncidentNarrative_TEST_incident": {
+        "component_renders": "PASS - Component renders in expanded incident row",
+        "ai_incident_summary_header": "PASS - 'AI Incident Summary' header with Brain icon",
+        "status_badge": "PASS - 'Up-to-date' badge (green/emerald)",
+        "title": "PASS - 'Critical Sos Alert on Mob-01'",
+        "one_line_summary": "PASS - Summary text displayed",
+        "confidence_badge": "PASS - '40% confidence' badge",
+        "model_badge": "PASS - 'Template' badge (not AI generated due to low confidence)",
+        "what_happened_section": "PASS - Bullet points with chronological events",
+        "contributing_factors": "PASS - 'Root cause analysis requires more data'",
+        "evidence_timeline": "PASS - Timestamped evidence entries",
+        "recommended_actions": "PASS - Actions with owner badges (system)",
+        "safety_note": "PASS - Yellow banner for test data warning",
+        "regenerate_button": "PASS - 'Regenerate' button present",
+        "toggle_button": "PASS - Expand/collapse chevron",
+        "view_history_button": "PASS - 'View History' button",
+        "history_panel": "PASS - Shows v1 Template 40%"
+      },
+      "IncidentNarrative_low_battery_incident": {
+        "component_renders": "PASS - Component renders in expanded row",
+        "ai_generation": "PASS - GPT-5.2 AI-generated narrative",
+        "confidence_badge": "PASS - '78% confidence' (AI generated)",
+        "model_badge": "PASS - 'GPT-5.2' badge",
+        "comprehensive_content": "PASS - Full what_happened, contributing_factors, evidence, actions",
+        "owner_badges": "PASS - operator and system owner badges on actions"
+      }
+    }
+  },
+  "api_endpoints_tested": {
+    "POST /api/operator/incidents/{id}/narrative": "Generate narrative - 200 OK, creates/returns cached narrative",
+    "GET /api/operator/incidents/{id}/narrative": "Get history - 200 OK, returns list of versions",
+    "GET /api/operator/incidents/{id}/narrative/status": "Check status - 200 OK, returns has_narrative, is_stale, latest_version"
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_narrative_engine.py",
+    "/app/test_reports/pytest/pytest_results_narrative.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Backend narrative_engine.py correctly implements two-stage generation: facts_pack → AI/template narrative",
+    "Backend uses EMERGENT_LLM_KEY with GPT-5.2 model for AI narrative generation",
+    "Backend template fallback works when AI unavailable or confidence < 0.6",
+    "Backend input_hash caching prevents duplicate generation when data unchanged",
+    "Backend immutable versioning increments on each new generation",
+    "Backend RBAC enforced - only operator/admin roles can access narrative endpoints",
+    "Backend 404 correctly returned for non-existent incident IDs",
+    "Frontend IncidentNarrative component shows loading state while fetching",
+    "Frontend renders all narrative sections: title, summary, what_happened, contributing_factors, evidence, actions",
+    "Frontend shows confidence badge (green/blue/amber/red based on score)",
+    "Frontend shows model badge (GPT-5.2 for AI, Template for fallback)",
+    "Frontend View History shows version history with clickable version items",
+    "Frontend safety_note renders in yellow warning banner",
+    "Frontend Regenerate button allows re-generation of narrative"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_narrative_engine.py"
+  ],
+  "success_rate": {
+    "backend": "100% (18/18 tests passed)",
+    "frontend": "100% (All UI elements verified)"
+  },
+  "test_credentials": {
+    "operator": "operator@Nagarik.com / operator123",
+    "guardian": "Nagarik4parents@gmail.com / secret123"
+  },
+  "seed_data_creation": "None - Used existing incidents (23b02397 TEST incident, d4ab6faf low_battery incident)",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "AI Incident Narrative Engine fully tested. TEST incident (23b02397) has a Template-generated narrative (40% confidence). low_battery incident (d4ab6faf) has an AI-generated narrative (78% confidence, GPT-5.2). The IncidentNarrative component renders in expanded incident rows on /operator/incidents page. Narrative loading takes 4-7 seconds due to API calls. Template narratives are generated when AI unavailable or confidence < 0.6. View History shows all narrative versions. RBAC enforced - guardian role gets 403.",
+  "ai_integration_verified": {
+    "model": "GPT-5.2 via Emergent LLM",
+    "api_key_env": "EMERGENT_LLM_KEY",
+    "working": true,
+    "evidence": "low_battery incident shows GPT-5.2 badge and 78% confidence"
+  }
+}

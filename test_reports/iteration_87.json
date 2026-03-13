@@ -1,0 +1,101 @@
+{
+  "summary": "Safety-Aware Routing Feature: Complete testing of POST /api/safe-route endpoint with all 4 modes (fastest, safest, balanced, night_guardian). Backend: 26/26 tests passed (100%). Frontend: Login and dashboard working correctly with SSE Live indicator.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_results": {
+    "backend_api": {
+      "POST /api/safe-route balanced mode": "PASS - Returns 3 routes with recommendation, mode_weights: {time: 0.5, safety: 0.5}",
+      "POST /api/safe-route safest mode": "PASS - Recommends safest route (lowest risk), mode_weights: {time: 0.2, safety: 0.8}",
+      "POST /api/safe-route fastest mode": "PASS - Recommends fastest route (lowest time), mode_weights: {time: 0.8, safety: 0.2}",
+      "POST /api/safe-route night_guardian at 2AM": "PASS - 80/20 safety/time weighting, higher risk scores (1.7x multiplier), environmental factors detected (deserted_area, late_night, low_lighting)",
+      "POST /api/safe-route invalid mode": "PASS - Returns 400 error with helpful message",
+      "Segment color coding": "PASS - Segments have valid hex colors (#22c55e green, #f59e0b yellow, #ef4444 red)",
+      "Segment risk breakdown": "PASS - Each segment has live_risk, forecast_risk, environmental fields",
+      "Route environmental_factors": "PASS - Routes include environmental_factors list",
+      "Route forecast_risk_avg": "PASS - Routes include forecast_risk_avg field",
+      "mode_weights in response": "PASS - Response includes mode_weights with time and safety percentages",
+      "recommended flag": "PASS - Exactly one route has recommended=true, matches mode selection",
+      "time parameter": "PASS - time='23:30' activates night_guardian mode automatically",
+      "GET /api/system/forecast-cache-status": "PASS - Returns cache monitoring data (redis_keys, memory_entries, ttl_seconds, grid_cell_size_m)",
+      "SOS cache invalidation": "PASS - SOS trigger invalidates forecast cache for grid cell (cache entries decreased from 46 to 45)",
+      "Authentication": "PASS - Requires auth, operators and guardians can access"
+    },
+    "frontend_ui": {
+      "login_page_loads": "PASS - Nagarik branding, Family/Operator tabs, login form visible",
+      "guardian_login": "PASS - Nagarik4parents@gmail.com / secret123 → Family Dashboard",
+      "dashboard_overview": "PASS - Shows stats (Seniors, Devices, Active Incidents, Critical, Online, Offline)",
+      "system_status": "PASS - Monitoring Service, Incident Detection, Device Sync all Active",
+      "sse_live_status": "PASS - 'Live' indicator visible showing SSE connected",
+      "navigation": "PASS - All nav items working (Overview, Safety Monitor, Safety Score, Incidents, Seniors, Settings)"
+    }
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_safety_aware_routing.py",
+    "/app/test_reports/pytest/pytest_results_safety_aware_routing.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Safety-Aware Routing correctly implements: Route Safety Score = 0.5 * live_risk + 0.3 * forecast_risk + 0.2 * environmental",
+    "Night Guardian auto-activates at night (22:00-06:00) when mode is balanced/safest, with 1.4x (night) or 1.7x (late_night) multiplier",
+    "Environmental factors (low_lighting, deserted_area, late_night, low_crowd) only appear during non-day hours",
+    "OSRM self-hosted routing working correctly with fallback to public OSRM",
+    "Forecast cache uses grid-based cells (~250m resolution) with 30-min TTL",
+    "SOS triggers correctly invalidate forecast cache for affected grid cell",
+    "In-memory fallback active for Redis (Redis not running in preview env)"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_safety_aware_routing.py"
+  ],
+  "success_rate": {
+    "backend": "100% (26/26 tests passed)",
+    "frontend": "100% (All login flows and dashboard working)"
+  },
+  "test_credentials": {
+    "operator": "operator@Nagarik.com / operator123",
+    "guardian": "Nagarik4parents@gmail.com / secret123"
+  },
+  "seed_data_creation": "One test SOS trigger created and cancelled for cache invalidation test",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Safety-Aware Routing feature fully tested. All 4 modes (fastest/safest/balanced/night_guardian) verified. Key behaviors: (1) Night Guardian auto-activates at night for balanced/safest modes, (2) Environmental factors appear only during non-day hours, (3) Segment scoring uses 50% live + 30% forecast + 20% environmental, (4) Mode weights control route recommendation, (5) Forecast cache invalidates on SOS trigger. Redis not running - in-memory fallback active. OSRM is self-hosted at localhost:5000.",
+  "mocked_apis": {
+    "has_mocked_apis": true,
+    "mocked_apis_list": [
+      "Redis not running in preview env - in-memory cache fallback active for forecast and rate limiting",
+      "OSRM creates synthetic route variants when fewer than 3 alternatives returned from self-hosted server"
+    ]
+  },
+  "verified_routing_modes": {
+    "balanced": {
+      "weights": {"time": 0.5, "safety": 0.5},
+      "recommendation": "balanced route"
+    },
+    "safest": {
+      "weights": {"time": 0.2, "safety": 0.8},
+      "recommendation": "safest route (lowest risk)"
+    },
+    "fastest": {
+      "weights": {"time": 0.8, "safety": 0.2},
+      "recommendation": "fastest route (lowest time)"
+    },
+    "night_guardian": {
+      "weights": {"time": 0.2, "safety": 0.8},
+      "multipliers": {"night": 1.4, "late_night": 1.7},
+      "environmental_factors": ["deserted_area", "late_night", "low_lighting", "low_crowd", "dim_lighting"],
+      "auto_activation": "Activates when time is night/late_night even if mode is balanced/safest"
+    }
+  },
+  "segment_scoring_formula": "Route Safety Score = 0.5 * live_risk + 0.3 * forecast_risk + 0.2 * environmental_factors",
+  "forecast_cache": {
+    "ttl_seconds": 1800,
+    "grid_cell_size_m": 250,
+    "sos_invalidation": "Verified - cache entries decrease when SOS triggered at location"
+  }
+}

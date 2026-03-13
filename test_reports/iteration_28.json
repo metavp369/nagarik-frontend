@@ -1,0 +1,76 @@
+{
+  "summary": "Multi-Metric Escalation Layer (Step 1) testing complete. All backend features working correctly. The 3-Gate model is implemented: Gate 1 (anomaly detected), Gate 2 (persistence >= 15min config), Gate 3 (score tier mapping). device_instability incident type created with correct metadata (source=multi_metric, tier, max_score, persistence info). All guardrails working: duplicate prevention, 30-min cooldown, simulation isolation. RBAC enforced (guardian blocked 403). L1_ONLY_INCIDENT_TYPES includes device_instability.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_results": {
+    "backend": {
+      "POST_evaluate_instability_operator_access": "PASS - Operator can trigger /api/operator/escalation/evaluate-instability",
+      "POST_evaluate_instability_guardian_blocked": "PASS - Guardian gets 403 Forbidden",
+      "POST_evaluate_instability_unauthenticated": "PASS - Unauthenticated gets 401/403",
+      "health_rules_combined_anomaly_new_fields": "PASS - persistence_minutes, escalation_tiers, instability_cooldown_minutes present",
+      "update_persistence_minutes": "PASS - Can update persistence_minutes via PUT",
+      "update_escalation_tiers": "PASS - Can update escalation_tiers via PUT",
+      "update_instability_cooldown_minutes": "PASS - Can update instability_cooldown_minutes via PUT",
+      "device_instability_in_L1_ONLY": "PASS - device_instability in L1_ONLY_INCIDENT_TYPES",
+      "tier_mapping_L1": "PASS - Scores 60-75 map to L1",
+      "tier_mapping_L2": "PASS - Scores 75-90 map to L2",
+      "tier_mapping_L3": "PASS - Scores 90-100 map to L3",
+      "tier_mapping_below_threshold": "PASS - Scores below 60 return None",
+      "tier_severity_map": "PASS - L1=medium, L2=high, L3=critical",
+      "simulation_isolation": "PASS - is_simulated=false filter in _evaluate_instability_escalation",
+      "duplicate_prevention": "PASS - No duplicate incident created for same device",
+      "cooldown_guardrail": "PASS - No incident created within 30-min cooldown",
+      "persistence_check": "PASS - Gate 2 persistence check implemented",
+      "incident_metadata": "PASS - device_instability incidents have correct metadata (source, tier, max_score, persistence_minutes_actual, etc.)",
+      "invalid_key_rejected": "PASS - Unknown threshold_json keys rejected (422)",
+      "schema_validation": "PASS - RULE_THRESHOLD_KEYS includes new fields"
+    }
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_instability_escalation.py",
+    "/app/test_reports/pytest/pytest_results_instability.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "All Multi-Metric Escalation Layer Step 1 requirements met",
+    "3-Gate model correctly implemented: Gate 1 (anomaly detection), Gate 2 (persistence >= persistence_minutes), Gate 3 (score to tier mapping)",
+    "Tier mapping: 60-75→L1/medium, 75-90→L2/high, 90-100→L3/critical working correctly",
+    "device_instability incident type created with correct metadata",
+    "Guardrails all working: duplicate prevention (no open incident), cooldown (30-min), simulation isolation (is_simulated=false)",
+    "device_instability added to L1_ONLY_INCIDENT_TYPES - no auto-escalation to L2/L3 notifications",
+    "combined_anomaly rule config updated with new fields: persistence_minutes, escalation_tiers, instability_cooldown_minutes",
+    "RBAC enforced - guardian blocked (403) from evaluate-instability endpoint"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_instability_escalation.py"
+  ],
+  "success_rate": {
+    "backend": "100% (22/22 pytest tests passed)"
+  },
+  "test_credentials": {
+    "operator": "operator@Nagarik.com / operator123",
+    "guardian": "Nagarik4parents@gmail.com / secret123"
+  },
+  "seed_data_creation": "Created test multi_metric anomalies for Mob-01 to verify escalation flow (cleaned up after test)",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Multi-Metric Escalation Layer Step 1 fully tested. 22 pytest tests in /app/backend/tests/test_instability_escalation.py cover: endpoint access, config fields, tier mapping, guardrails, simulation isolation. Two device_instability incidents exist in DB: one for WBAND-E2E-001 (resolved), one for Mob-01 (resolved, from this test). Cooldown is 30 minutes so new incidents for these devices won't be created until cooldown expires. The _evaluate_instability_escalation function runs as part of run_baseline_and_anomaly_cycle every 5 minutes.",
+  "verification_summary": {
+    "endpoint_tested": "POST /api/operator/escalation/evaluate-instability",
+    "config_fields_verified": ["persistence_minutes", "escalation_tiers", "instability_cooldown_minutes"],
+    "tier_mapping_tested": {
+      "60-75": "L1/medium",
+      "75-90": "L2/high",
+      "90-100": "L3/critical"
+    },
+    "guardrails_verified": ["duplicate prevention", "cooldown (30min)", "simulation isolation"],
+    "incident_metadata_fields": ["source", "tier", "max_score", "persistence_minutes_actual", "persistence_minutes_threshold", "anomaly_count", "first_detected_at", "last_seen_at", "device_identifier"]
+  }
+}

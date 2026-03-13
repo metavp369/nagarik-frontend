@@ -1,0 +1,103 @@
+{
+  "summary": "Historical Replay Mode for Simulation Comparison Engine - All 13 backend tests and 15+ frontend UI tests PASSED. Replay mode allows operators to query historical anomaly data using start_time and end_time parameters. Mode selector, replay presets, custom date picker, and replay metadata panel all working correctly.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_results": {
+    "backend": {
+      "test_replay_mode_missing_start_time_returns_422": "PASS",
+      "test_replay_mode_missing_end_time_returns_422": "PASS",
+      "test_replay_mode_end_before_start_returns_422": "PASS",
+      "test_replay_mode_window_exceeds_7_days_returns_422": "PASS",
+      "test_replay_mode_future_end_time_returns_422": "PASS",
+      "test_replay_mode_successful_with_historical_data": "PASS - March 1-4 date range returned data",
+      "test_replay_metadata_has_correct_fields": "PASS - window_span_minutes, telemetry_events_analyzed, anomaly_records_evaluated",
+      "test_live_mode_still_works": "PASS - backward compatible",
+      "test_default_mode_is_live": "PASS",
+      "test_replay_15_minute_window": "PASS",
+      "test_replay_1_hour_window": "PASS",
+      "test_replay_7_day_max_window": "PASS",
+      "test_replay_and_live_have_same_base_response_structure": "PASS"
+    },
+    "frontend": {
+      "mode_selector_renders": "PASS - Live Telemetry and Historical Replay buttons present",
+      "live_mode_shows_window_dropdown": "PASS - 15min/1h/6h/24h options",
+      "clicking_replay_changes_ui": "PASS - UI shows replay controls",
+      "replay_presets_dropdown_works": "PASS - 15min, 1h, 6h, 24h, 3d, 7d, Custom all present",
+      "custom_shows_datetime_inputs": "PASS - start/end datetime-local inputs appear",
+      "run_replay_button_text": "PASS - Button says 'Run Replay' in replay mode",
+      "replay_sends_correct_payload": "PASS - API receives mode=replay with start/end times",
+      "replay_metadata_panel_displays": "PASS - Shows window, events, anomaly records, devices",
+      "switching_modes_marks_stale": "PASS - Stale banner appears when mode changes after run",
+      "live_mode_backward_compatible": "PASS - Run Comparison in live mode works",
+      "stale_indicator_works": "PASS - Amber banner with Re-run button",
+      "existing_features_work": "PASS - Config cards, presets, validation, swap, apply all working"
+    }
+  },
+  "verified_test_ids": [
+    "cmp-mode-live",
+    "cmp-mode-replay", 
+    "cmp-mode-selector",
+    "cmp-window-select",
+    "cmp-start-time",
+    "cmp-end-time",
+    "cmp-replay-controls",
+    "cmp-custom-dates",
+    "replay-metadata-panel",
+    "replay-meta-window",
+    "replay-meta-events",
+    "replay-meta-anomalies",
+    "replay-meta-devices",
+    "sim-tab-compare",
+    "sim-compare-tab",
+    "compare-run-btn",
+    "compare-window-select",
+    "cfg-a-card",
+    "cfg-b-card",
+    "compare-delta-kpis",
+    "compare-stale-banner",
+    "compare-swap-btn",
+    "compare-apply-btn"
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_replay_mode_comparison.py",
+    "/app/test_reports/pytest/pytest_results_replay_mode.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Backend validates replay mode correctly: missing start/end returns 422, end before start returns 422, >7 days returns 422, future end_time returns 422",
+    "replay_metadata contains all required fields: mode, start_time, end_time, window_span_minutes, telemetry_events_analyzed, anomaly_records_evaluated",
+    "Live mode remains backward compatible - default mode is 'live' when not specified",
+    "Frontend mode selector correctly toggles between Live Telemetry and Historical Replay",
+    "Replay presets dropdown includes all requested options: 15min, 1h, 6h, 24h, 3d, 7d, Custom",
+    "Custom date range picker shows datetime-local inputs for start/end times",
+    "ReplayMetadataPanel component displays historical replay metrics correctly",
+    "Stale indicator correctly tracks mode changes after a successful run"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_replay_mode_comparison.py"
+  ],
+  "success_rate": {
+    "backend": "100% (13/13 tests passed)",
+    "frontend": "100% (15+ UI interactions verified)"
+  },
+  "test_credentials": {
+    "operator": "operator@Nagarik.com / operator123"
+  },
+  "seed_data_creation": "None needed - used existing historical data from March 1-4, 2026",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Historical Replay Mode fully tested and working. Backend endpoint POST /api/operator/simulate/compare/multi-metric accepts mode='replay' with start_time and end_time (ISO format). Frontend Compare tab has mode selector at top with Live Telemetry (default) and Historical Replay buttons. Replay mode shows presets dropdown (15min to 7 days + Custom) and custom date pickers. Response includes replay_metadata with window_span_minutes, telemetry_events_analyzed, anomaly_records_evaluated. Stale indicator appears when switching modes after a successful run.",
+  "replay_mode_test_data": {
+    "tested_date_range": "2026-03-01 to 2026-03-04",
+    "telemetry_events_in_range": 913,
+    "anomaly_records_in_range": 1,
+    "devices_with_data": 1
+  }
+}

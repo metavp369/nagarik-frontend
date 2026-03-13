@@ -1,0 +1,95 @@
+{
+  "summary": "Live Route Monitoring feature fully tested - all backend API endpoints working, frontend UI with Mapbox visualization working. Corridor generation using Shapely produces valid GeoJSON polygon. On-route/off-route detection, escalation logic, trail tracking, session management all verified.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_results": {
+    "backend_api": {
+      "POST /api/route-monitor/start": "PASS - Returns corridor polygon, corridor_width_m, status=monitoring",
+      "POST /api/route-monitor/start (balanced mode)": "PASS - Corridor width 35m",
+      "POST /api/route-monitor/start (safest mode)": "PASS - Corridor width 30m",
+      "POST /api/route-monitor/start (fastest mode)": "PASS - Corridor width 40m",
+      "POST /api/route-monitor/start (night_guardian mode)": "PASS - Corridor width 25m",
+      "POST /api/route-monitor/start (invalid mode)": "PASS - Returns 400",
+      "POST /api/route-monitor/start (insufficient coords)": "PASS - Returns 422 validation error",
+      "POST /api/route-monitor/start (no auth)": "PASS - Returns 401",
+      "GET /api/route-monitor/session (active)": "PASS - Returns status=active, mode, escalation_level, trail_length",
+      "GET /api/route-monitor/session (inactive)": "PASS - Returns status=none",
+      "POST /api/route-monitor/location (on-route)": "PASS - inside_corridor=true, distance=0",
+      "POST /api/route-monitor/location (off-route)": "PASS - inside_corridor=false, distance>100m",
+      "POST /api/route-monitor/location (no session)": "PASS - Returns 404",
+      "Escalation L1 trigger": "PASS - Triggers after 2 consecutive off-route checks >10s",
+      "Back on track resets escalation": "PASS - Escalation resets to 0 on return to corridor",
+      "POST /api/route-monitor/stop": "PASS - Returns total_trail_points, max_escalation, total_deviations, max_distance_m, duration_s",
+      "POST /api/route-monitor/stop (no session)": "PASS - Returns 404"
+    },
+    "frontend_ui": {
+      "nav-route-monitor": "PASS - Route Monitor nav item in sidebar",
+      "route-monitor-page": "PASS - Page loads at /family/route-monitor",
+      "route-monitor-map": "PASS - Mapbox dark-v11 map renders (Mumbai center)",
+      "route-monitor-panel": "PASS - Side panel visible",
+      "monitoring-status-card": "PASS - Shows Status, Escalation, Trail Points, Mode",
+      "start-monitor-btn": "PASS - Starts monitoring, draws corridor on map",
+      "stop-monitor-btn": "PASS - Stops monitoring, clears state",
+      "sim-on-route-btn": "PASS - Simulates on-route GPS update",
+      "sim-off-route-btn": "PASS - Simulates off-route GPS update (deviation)",
+      "simulation-controls": "PASS - Appears when monitoring active",
+      "last-update-card": "PASS - Shows In Corridor, Route Distance, Off Duration, Area Risk",
+      "escalation-levels-guide": "PASS - L1 Warning, L2 Alert, L3 Emergency thresholds",
+      "map-corridor-polygon": "PASS - Green corridor polygon drawn using GeoJSON",
+      "map-start-end-markers": "PASS - S (start) and D (destination) markers",
+      "map-user-trail": "PASS - User trail line drawn",
+      "map-deviation-marker": "PASS - Red deviation marker when off-route",
+      "map-legend": "PASS - Legend shows Planned Route, Safe Corridor, User Trail, Deviation Point"
+    }
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_route_monitor_live.py",
+    "/app/test_reports/pytest/pytest_results_route_monitor_live.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Route monitor service uses in-memory fallback (_mem_store) when Redis unavailable - appropriate for preview environment",
+    "Corridor generation uses Shapely library for accurate polygon buffering",
+    "Escalation logic requires CONSECUTIVE_OFF_TRIGGER=2 off-route checks before triggering",
+    "SSE events (route_warning, route_alert, route_emergency, route_back_on_track) are emitted per escalation level"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_route_monitor_live.py"
+  ],
+  "success_rate": {
+    "backend": "100% (15/15 pytest tests passed)",
+    "frontend": "100% (All UI elements verified)"
+  },
+  "test_credentials": {
+    "guardian": "Nagarik4parents@gmail.com / secret123"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Live Route Monitoring feature fully tested. All 4 API endpoints working: /start, /session, /location, /stop. Frontend RouteMonitorPage renders Mapbox map with corridor polygon, start/destination markers, user trail, deviation markers. Simulation buttons (On Route / Deviate) work correctly. Last Update card shows corridor status. Escalation levels guide displayed. Redis unavailable in preview - uses in-memory fallback.",
+  "mocked_apis": {
+    "has_mocked_apis": false,
+    "mocked_apis_list": [
+      "Redis not running - in-memory fallback for route session storage (intentional design)"
+    ]
+  },
+  "verified_features": {
+    "corridor_generation": "Working - Shapely generates valid GeoJSON polygon with configurable width per mode",
+    "on_route_detection": "Working - Returns inside_corridor=true, distance=0",
+    "off_route_detection": "Working - Returns inside_corridor=false with distance in meters",
+    "escalation_l1_trigger": "Working - Triggers after 2+ off-route checks, >30m, >10s",
+    "back_on_track_reset": "Working - Escalation resets to 0 when user returns to corridor",
+    "session_management": "Working - Start/stop/status endpoints all functional",
+    "trail_tracking": "Working - Trail accumulates GPS points, max 200",
+    "mapbox_visualization": "Working - Dark theme map, corridor polygon, user trail, markers",
+    "simulation_controls": "Working - On Route and Deviate buttons function correctly",
+    "last_update_card": "Working - Shows In Corridor, Route Distance, Off Duration, Area Risk"
+  }
+}

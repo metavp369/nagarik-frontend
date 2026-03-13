@@ -1,0 +1,151 @@
+{
+  "summary": "Command Center Feature - COMPLETE. Backend: 19/19 tests PASSED. Frontend: All UI components verified. The Command Center aggregates 5 AI intelligence layers: Fleet Safety Score (83 Stable), Predictive Alerts (15), Risk Forecast Highlights (6 HIGH windows), Twin Evolution Shifts (0 detected), and Active Incidents (20). All panels render correctly with proper data-testid attributes. Navigation and interactions work correctly.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Command Center",
+        "issues": ["Initial page load takes ~20 seconds due to fleet safety score computation for 9 devices. This is expected behavior as noted in the requirements."]
+      }
+    ]
+  },
+  "test_results": {
+    "backend": {
+      "TestCommandCenterEndpoint": {
+        "test_command_center_returns_200": "PASS - Returns 200 OK for operator in ~20s",
+        "test_response_structure_has_all_sections": "PASS - Contains generated_at, fleet_safety, predictive_alerts, forecast_highlights, evolution_shifts, active_incidents, counts",
+        "test_fleet_safety_structure": "PASS - Contains fleet_score, fleet_status, device_count, status_breakdown, devices",
+        "test_fleet_devices_array_structure": "PASS - Each device has device_id, device_identifier, safety_score, status",
+        "test_predictive_alerts_structure": "PASS - Each alert has device_identifier, prediction_type, score, explanation",
+        "test_forecast_highlights_structure": "PASS - Each highlight has device_identifier, bucket, risk_score, risk_level, reason",
+        "test_evolution_shifts_structure": "PASS - Empty list when no shifts detected (valid)",
+        "test_active_incidents_structure": "PASS - Each incident has id, device_identifier, severity, status, escalation_level",
+        "test_counts_object_structure": "PASS - Contains predictive_alerts, high_risk_windows, evolution_shifts, active_incidents, critical_devices"
+      },
+      "TestCommandCenterRBAC": {
+        "test_guardian_gets_403": "PASS - Guardian role correctly gets 403 Forbidden",
+        "test_unauthenticated_gets_401": "PASS - Unauthenticated request gets 401"
+      },
+      "TestCommandCenterDataContent": {
+        "test_fleet_score_in_valid_range": "PASS - Fleet score 83 in range [0, 100]",
+        "test_fleet_status_is_valid": "PASS - Status 'STABLE' is valid",
+        "test_status_breakdown_counts_match_device_count": "PASS - 9 devices = 7 excellent + 2 attention",
+        "test_predictive_alert_scores_valid": "PASS - All 15 alerts have scores >= 0.5",
+        "test_forecast_risk_levels_valid": "PASS - All 12 highlights have HIGH or MEDIUM risk levels",
+        "test_evolution_shift_severity_valid": "PASS - No shifts (valid empty list)",
+        "test_incident_severity_levels_valid": "PASS - All 20 incidents have valid severity",
+        "test_generated_at_is_recent": "PASS - Timestamp is recent"
+      }
+    },
+    "frontend": {
+      "navigation": {
+        "command_center_nav_link": "PASS - data-testid='op-nav-command-center' found in sidebar with Brain icon",
+        "nav_link_text": "PASS - Shows 'Command Center' text",
+        "nav_link_active_state": "PASS - Amber background when active"
+      },
+      "header": {
+        "title": "PASS - 'Nagarik Command Center' header with Brain icon",
+        "subtitle": "PASS - 'Unified intelligence — what happened, what will happen, what is deteriorating'",
+        "quick_stats_active_badge": "PASS - Shows '20 Active' badge",
+        "quick_stats_high_risk_badge": "PASS - Shows '6 HIGH Risk' badge",
+        "refresh_button": "PASS - data-testid='cc-refresh' present and functional"
+      },
+      "fleet_safety_panel": {
+        "panel_container": "PASS - data-testid='cc-fleet-safety'",
+        "score_ring": "PASS - Score ring displays 83",
+        "status_badge": "PASS - Shows 'Stable' badge",
+        "status_breakdown_pills": "PASS - Shows '2 Attention', '7 Excellent' pills",
+        "devices_list": "PASS - data-testid='cc-fleet-devices' with 9 devices",
+        "device_entries": "PASS - Each device shows score, identifier, and status badge (data-testid='cc-device-{id}')"
+      },
+      "active_incidents_panel": {
+        "panel_container": "PASS - data-testid='cc-active-incidents'",
+        "incident_count_badge": "PASS - Shows '20' badge",
+        "view_all_button": "PASS - data-testid='cc-view-all-incidents' navigates to /operator/incidents",
+        "incident_entries": "PASS - 20 incidents displayed with severity badges and escalation levels (data-testid='cc-incident-{id}')"
+      },
+      "predictive_alerts_panel": {
+        "panel_container": "PASS - data-testid='cc-predictive-alerts'",
+        "alert_count_badge": "PASS - Shows '15' badge",
+        "alert_entries": "PASS - 15 alerts displayed with prediction type, score percentage, explanation (data-testid='cc-alert-{id}')"
+      },
+      "risk_forecast_panel": {
+        "panel_container": "PASS - data-testid='cc-forecast-highlights'",
+        "high_risk_badge": "PASS - Shows '6 HIGH' badge",
+        "forecast_entries": "PASS - 12 entries with bucket (Morning, Afternoon, etc.), time range, risk score (data-testid='cc-forecast-{id}-{bucket}')"
+      },
+      "evolution_shifts_panel": {
+        "panel_container": "PASS - data-testid='cc-evolution-shifts'",
+        "empty_state": "PASS - Shows 'No behavioral shifts detected' message (expected)"
+      },
+      "footer": {
+        "generated_timestamp": "PASS - Shows 'Generated {date} — Aggregating 9 devices across 9 AI layers'"
+      },
+      "interactions": {
+        "device_click_navigation": "PASS - Clicking device navigates to /operator/device-health",
+        "incident_click_navigation": "PASS - Clicking incident navigates to /operator/incidents",
+        "view_all_incidents_navigation": "PASS - View All button navigates to /operator/incidents",
+        "refresh_button_functionality": "PASS - Refresh button fetches fresh data"
+      }
+    }
+  },
+  "api_endpoints_tested": {
+    "GET /api/operator/command-center": {
+      "status": "200 OK",
+      "response_time": "~20s (first load, fleet computation)",
+      "data_verified": {
+        "fleet_score": 83,
+        "fleet_status": "STABLE",
+        "device_count": 9,
+        "status_breakdown": {"excellent": 7, "attention": 2},
+        "predictive_alerts": 15,
+        "forecast_highlights": 12,
+        "high_risk_windows": 6,
+        "evolution_shifts": 0,
+        "active_incidents": 20,
+        "critical_devices": 2
+      }
+    },
+    "RBAC enforcement": {
+      "guardian_access": "403 Forbidden",
+      "unauthenticated": "401 Unauthorized"
+    }
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_command_center.py",
+    "/app/test_reports/pytest/pytest_results_command_center.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Backend get_command_center endpoint correctly aggregates data from 5 sources: safety_scores, predictive_risks, risk_forecasts, twin_evolution_snapshots, and incidents",
+    "Backend uses efficient SQL queries with proper JOINs and limits (15 alerts, 15 forecasts, 20 incidents)",
+    "Backend correctly filters: predictive alerts >= 0.5 score, forecast highlights HIGH/MEDIUM within 30 min TTL",
+    "Backend evolution_shifts computation correctly detects declines using thresholds (-20% for movement/active_hours/signal, -15% for battery)",
+    "Backend RBAC properly enforced via require_role('operator', 'admin') dependency",
+    "Frontend CommandCenter.jsx correctly renders all 5 panels with proper data-testid attributes",
+    "Frontend uses efficient React patterns: useCallback for fetchData, conditional rendering for empty states",
+    "Frontend properly displays loading state with cc-loading indicator during initial fetch",
+    "Frontend correctly handles empty states for each panel (No active predictive alerts, No behavioral shifts, etc.)",
+    "Frontend navigation works correctly - devices link to device-health, incidents link to incidents page"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_command_center.py"
+  ],
+  "success_rate": {
+    "backend": "100% (19/19 tests passed)",
+    "frontend": "100% (All UI elements verified)"
+  },
+  "test_credentials": {
+    "operator": "operator@Nagarik.com / operator123",
+    "guardian": "Nagarik4parents@gmail.com / secret123"
+  },
+  "seed_data_creation": "None - Used existing data",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Command Center feature fully tested. The endpoint GET /api/operator/command-center takes ~20s on first load due to fleet safety score computation for 9 devices. Data verified: fleet_score=83 (Stable), 9 devices (7 excellent, 2 attention: DEV-001=50, DEV-002=53), 20 active incidents (mostly critical), 15 predictive alerts, 6 HIGH risk forecast windows, 0 evolution shifts. All data-testid attributes work correctly. Frontend renders at /operator/command-center with proper navigation from sidebar using Brain icon."
+}

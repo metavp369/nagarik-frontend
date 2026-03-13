@@ -1,0 +1,113 @@
+{
+  "summary": "Live Route Monitoring system tested successfully. Backend: 18/18 tests PASSED. Frontend: All UI elements verified. Fixed unique constraint bug in route_monitor_service.py and operator.py that was causing 500 errors when reassigning monitors.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "bug_fixed": {
+    "issue": "UniqueViolationError on active_route_monitors table",
+    "error": "duplicate key value violates unique constraint 'uq_device_active' on (device_id, status)",
+    "root_cause": "The unique constraint on (device_id, status) prevented having multiple 'cancelled' monitors for the same device. When cancelling an active monitor, it would fail if any previous cancelled monitor existed.",
+    "fix": "Delete old cancelled monitors before updating current active monitor to 'cancelled' status",
+    "files_fixed": [
+      "/app/backend/app/services/route_monitor_service.py - Added DELETE query before UPDATE",
+      "/app/backend/app/api/operator.py - Added DELETE query before UPDATE in cancel endpoint"
+    ]
+  },
+  "test_results": {
+    "backend": {
+      "total_tests": 18,
+      "passed": 18,
+      "failed": 0,
+      "test_categories": {
+        "auth_tests": "4 PASS - All route-monitor endpoints return 401/403 without auth",
+        "route_safety_sampling": "4 PASS - 200m sampling verified, routes have segments with risk info",
+        "route_monitor_assignment": "2 PASS - Requires route_data in body, assigns successfully",
+        "route_monitor_status": "2 PASS - Returns position tracking with alert_level, progress, upcoming_dangers",
+        "active_monitors_list": "2 PASS - Returns monitors with device_identifier, alert_level, route_progress",
+        "route_monitor_cancel": "1 PASS - Handles nonexistent monitor gracefully",
+        "route_monitor_replacement": "1 PASS - New assignment replaces existing active monitor",
+        "osrm_resilience": "2 PASS - Valid coords return routes, invalid coords handled gracefully"
+      }
+    },
+    "frontend": {
+      "route_safety_page": {
+        "route_safety_intelligence_card": "PASS - data-testid='route-safety-intelligence'",
+        "route_map_container": "PASS - data-testid='route-map-container'",
+        "set_route_btn": "PASS - data-testid='set-route-btn'",
+        "click_mode_indicator": "PASS - data-testid='click-mode-indicator'",
+        "route_cards_panel": "PASS - Shows 3 ROUTE OPTIONS",
+        "route_legend": "PASS - data-testid='route-legend'",
+        "route_summary": "PASS - Shows Distance, Duration, Risk Score, sampled_points (55)",
+        "monitor_route_section": "PASS - data-testid='monitor-route-section'",
+        "monitor_device_select": "PASS - data-testid='monitor-device-select' with ~10 device options",
+        "monitor_route_btn": "PASS - data-testid='monitor-route-btn'",
+        "active_monitors_panel": "PASS - data-testid='active-monitors-panel' showing 1 Active Monitor"
+      },
+      "command_center": {
+        "cc_route_monitors": "PASS - data-testid='cc-route-monitors' panel visible",
+        "route_monitors_content": "Shows '1 Active' badge, DEV-001 at 26.7% complete",
+        "alert_status": "Shows device off-route status (9240m off route)",
+        "cc_view_route_safety": "PASS - data-testid='cc-view-route-safety' link navigates correctly"
+      }
+    }
+  },
+  "features_verified": {
+    "backend_api": {
+      "POST /api/operator/route-monitor": {
+        "status": "200 OK",
+        "requires": "device_id, route_index, start/end coords as query params, route_data in JSON body",
+        "response": {"monitor_id": "uuid", "device_id": "string", "status": "active", "assigned_at": "ISO timestamp"}
+      },
+      "GET /api/operator/route-monitor/{device_id}": {
+        "status": "200 OK",
+        "response_fields": ["monitor_id", "status", "device_location", "route_progress", "distance_from_route_m", "alert_level", "upcoming_dangers"]
+      },
+      "GET /api/operator/route-monitors": {
+        "status": "200 OK",
+        "response": {"monitors": [{"monitor_id", "device_id", "device_identifier", "alert_level", "route_progress", "assigned_at"}]}
+      },
+      "DELETE /api/operator/route-monitor/{device_id}": {
+        "status": "200 OK",
+        "response": {"status": "cancelled", "monitor_id": "uuid"} 
+      },
+      "POST /api/operator/route-safety": {
+        "200m_sampling": "VERIFIED - routes show ~55 sampled_points for ~12km route (12000m / 200m ≈ 60 points)",
+        "osrm_retry": "Configured with OSRM_RETRIES=2 in route_safety_engine.py"
+      }
+    }
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_route_monitoring.py",
+    "/app/test_reports/pytest/pytest_results_route_monitoring.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Route monitor unique constraint bug fixed - now deletes old cancelled monitors before cancelling active one",
+    "SAMPLE_INTERVAL_M=200 verified in route_safety_engine.py (line 23)",
+    "OSRM_RETRIES=2 with OSRM_TIMEOUT=10 configured for resilience",
+    "Command Center fetches route monitors via getActiveRouteMonitors() in parallel with other endpoints"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_route_monitoring.py",
+    "/app/backend/app/services/route_monitor_service.py",
+    "/app/backend/app/api/operator.py"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "100%"
+  },
+  "test_credentials": {
+    "operator": "operator@Nagarik.com / operator123",
+    "test_device_id": "ce4b5463-5a7e-46a5-8bbf-365dcfb3daeb (DEV-001)"
+  },
+  "seed_data_creation": "None - used existing device DEV-001 and live OSRM routing",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Live Route Monitoring system complete. All 4 endpoints (/route-monitor POST, GET, DELETE, /route-monitors) working. Bug fixed for unique constraint violation on cancelled monitors. 200m sampling interval verified (~55 points for 12km route). Command Center shows Route Monitors panel with device progress and off-route alerts."
+}

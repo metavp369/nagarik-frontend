@@ -1,0 +1,132 @@
+{
+  "summary": "Phase 31A Patrol AI ↔ City Heatmap Integration fully tested. Backend: 17/17 tests passed verifying /api/operator/patrol/generate with and without use_heatmap parameter. WITHOUT heatmap: heatmap_enhanced=false, heatmap_stats=null, score_breakdown has heatmap_score=0/heatmap_risk=none/heatmap_boost=1.0. WITH heatmap: heatmap_enhanced=true, heatmap_stats present, score_breakdown includes non-zero heatmap values, correct boost multipliers (critical=1.25, high=1.12, moderate=1.0, safe=0.9), base_composite_score field present, heatmap_cell_id when matched. Frontend: All heatmap integration features verified - toggle switch (patrol-heatmap-toggle), heatmap badges (+25%/+12%) on zone cards, expanded zone shows Heatmap score bar (amber) with cell ID and boost multiplier, map overlay shows 'Heatmap' label with flame icon, heat layer renders on map.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_patrol_heatmap_integration.py",
+    "/app/test_reports/pytest/pytest_results_patrol_heatmap_integration.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Heatmap boost constants correctly defined: HEATMAP_BOOST_CRITICAL=1.25, HEATMAP_BOOST_HIGH=1.12, HEATMAP_BOOST_MODERATE=1.0, HEATMAP_BOOST_SAFE=0.9",
+    "_get_heatmap_boost() correctly matches zones to nearest heatmap cell within ~500m (0.005 degree Manhattan distance)",
+    "Boosted composite_score = min(10.0, base_composite_score * heatmap_boost) - properly capped at 10.0",
+    "base_composite_score preserved in response for comparison when heatmap enabled",
+    "score_breakdown includes heatmap_score, heatmap_risk, heatmap_boost, heatmap_cell_id (when matched)",
+    "Frontend PatrolHeatLayer correctly renders heat layer using leaflet.heat with gradient from safe (green) to critical (dark red)",
+    "Zone cards show amber heatmap badges with boost percentage (+25% for critical, +12% for high)",
+    "Expanded zone card shows Heatmap score bar with cell ID and boost multiplier"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_patrol_heatmap_integration.py"
+  ],
+  "success_rate": {
+    "backend": "100% (17/17 tests passed)",
+    "frontend": "100% - All heatmap integration features verified"
+  },
+  "test_credentials": {
+    "operator": "operator@Nagarik.com / operator123"
+  },
+  "seed_data_creation": "Used existing location_risk_zones (learned_hotspots) and location_incidents data from city heatmap engine",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Phase 31A integrates Patrol AI with City Heatmap. Key endpoint: GET /api/operator/patrol/generate?use_heatmap=true. Heatmap boost multipliers: critical=1.25, high=1.12, moderate=1.0, safe=0.9. Frontend data-testid values: patrol-ai-dashboard, patrol-controls, patrol-heatmap-toggle, patrol-generate-btn, patrol-zone-{N}, heatmap-badge-{N}. Route generation with heatmap takes ~10-15 seconds (generates heatmap + patrol route). Test file: test_patrol_heatmap_integration.py",
+  "tests_executed": {
+    "backend_api_tests": [
+      "GET /api/operator/patrol/generate?shift=morning&max_zones=5 - WITHOUT heatmap returns 200",
+      "WITHOUT heatmap: heatmap_enhanced=false verified",
+      "WITHOUT heatmap: heatmap_stats=null verified",
+      "WITHOUT heatmap: score_breakdown has heatmap_score=0, heatmap_risk=none, heatmap_boost=1.0",
+      "GET /api/operator/patrol/generate?shift=morning&max_zones=5&use_heatmap=true - WITH heatmap returns 200",
+      "WITH heatmap: heatmap_enhanced=true verified",
+      "WITH heatmap: heatmap_stats present with critical/high/moderate/safe counts",
+      "WITH heatmap: score_breakdown has heatmap_score, heatmap_risk, heatmap_boost fields",
+      "WITH heatmap: each zone has base_composite_score field",
+      "Heatmap boost critical (1.25x) increases composite_score",
+      "Heatmap boost safe (0.9x) decreases composite_score",
+      "WITH heatmap: heatmap_cell_id present when zone matched to cell",
+      "WITH heatmap: each zone has heatmap_enhanced=true",
+      "Heatmap affects route ordering verified",
+      "Boost multipliers match expected values (critical=1.25, high=1.12, moderate=1.0, safe=0.9)",
+      "Patrol generate requires authentication (401 without token)",
+      "Patrol generate with heatmap requires authentication (401 without token)"
+    ],
+    "frontend_ui_tests": [
+      "Operator login successful",
+      "Patrol AI nav link visible in sidebar",
+      "PatrolAIDashboard loads at /operator/patrol-ai with data-testid=patrol-ai-dashboard",
+      "Patrol controls panel present with data-testid=patrol-controls",
+      "Heatmap toggle switch present with data-testid=patrol-heatmap-toggle",
+      "Heatmap toggle initial state: unchecked",
+      "Generate button present with data-testid=patrol-generate-btn",
+      "Route WITHOUT heatmap: 10 zone cards generated, 0 heatmap badges",
+      "Route WITH heatmap: toggle state=checked after click",
+      "Route WITH heatmap: 10 zone cards with heatmap badges (+12%, +25%)",
+      "Route WITH heatmap: Map overlay shows 'Heatmap' label with flame icon",
+      "Expanded zone card shows all 5 score bars + Heatmap score bar (amber)",
+      "Expanded zone shows Cell ID (e.g., C098_031) and Boost (e.g., x1.12)",
+      "Heat layer canvas element rendered on map"
+    ]
+  },
+  "verified_features": [
+    "GET /api/operator/patrol/generate?use_heatmap=false returns heatmap_enhanced=false, heatmap_stats=null",
+    "GET /api/operator/patrol/generate?use_heatmap=true returns heatmap_enhanced=true, heatmap_stats present",
+    "Heatmap boost changes composite scores: critical zones boosted 25%, high zones boosted 12%",
+    "Response includes base_composite_score field when heatmap is used for comparison",
+    "Score breakdown includes heatmap_score, heatmap_risk, heatmap_boost, heatmap_cell_id",
+    "Frontend heatmap toggle switch (patrol-heatmap-toggle) in controls panel",
+    "Frontend heatmap badges (+25%/+12%) on zone cards when heatmap enabled",
+    "Expanded zone card shows Heatmap score bar (amber) with cell ID and boost multiplier",
+    "Map overlay shows 'Heatmap' label with flame icon when heatmap-enhanced",
+    "Heat layer overlay appears on patrol route map when heatmap toggle is ON",
+    "Without heatmap toggle, route works as before (no heatmap bars or badges)"
+  ],
+  "api_response_sample": {
+    "patrol_generate_with_heatmap": {
+      "heatmap_enhanced": true,
+      "heatmap_stats": {
+        "critical": 6,
+        "high": 43,
+        "moderate": 93,
+        "safe": 292,
+        "dominant_signal": "activity"
+      },
+      "route_sample": {
+        "zone_name": "Learned Hotspot (5 incidents)",
+        "composite_score": 8.1,
+        "base_composite_score": 7.23,
+        "heatmap_enhanced": true,
+        "patrol_priority": "critical",
+        "score_breakdown": {
+          "forecast": 8.6,
+          "trend": 5.7,
+          "activity": 6.8,
+          "learning": 8.7,
+          "temporal": 5.8,
+          "heatmap_score": 6.9,
+          "heatmap_risk": "high",
+          "heatmap_boost": 1.12,
+          "heatmap_cell_id": "C098_031"
+        }
+      }
+    },
+    "patrol_generate_without_heatmap": {
+      "heatmap_enhanced": false,
+      "heatmap_stats": null,
+      "route_sample": {
+        "score_breakdown": {
+          "heatmap_score": 0,
+          "heatmap_risk": "none",
+          "heatmap_boost": 1.0
+        }
+      }
+    }
+  }
+}
