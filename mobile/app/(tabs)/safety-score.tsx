@@ -1,4 +1,4 @@
-// Safety Score Screen
+﻿// Safety Score Screen
 import { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
@@ -80,7 +80,7 @@ export default function SafetyScoreScreen() {
     const label = scoreLabel(result.data.score);
     try {
       await Share.share({
-        message: `My Nagarik Score: ${score}/10 (${label}). Check your area's safety at Nagarik.care`,
+        message: `My Nagarik Score: ${score}/10 (${label}). Check your area's safety at nagarik.online`,
       });
     } catch {}
   };
